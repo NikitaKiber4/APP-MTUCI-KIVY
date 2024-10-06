@@ -134,7 +134,7 @@ class LoadingScreen(Screen):
         self.manager.current = 'login_sc'
 
 
-class TestApp(App):
+class MTUCIApp(App):
     def build(self):
         screen_manager = ScreenManager()
         screen_manager.add_widget(LoginWindow(name='login_sc'))
