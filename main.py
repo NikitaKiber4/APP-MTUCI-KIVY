@@ -22,7 +22,7 @@ Builder.load_string("""
         Label:
             id: lab1
             text: "Авторизация"
-            font_size: 40
+            font_size: 60
             color: 1, 1, 1, 0.8
             pos_hint: {"center_x": 0.5, "center_y": 0.7}
 
