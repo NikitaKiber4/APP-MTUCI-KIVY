@@ -1,11 +1,18 @@
 from kivy.app import App
-from kivy.animation import Animation
+
+from kivy.uix.video import Video
+from kivy.uix.image import Image
 from kivy.properties import ObjectProperty, StringProperty, NumericProperty
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.screenmanager import SlideTransition
 from kivy.lang import Builder
 
+import cv2
+
+#В БИЛДОЗЕР ЕЩЕ ДОБАВИТЬ ffpyplayer (requirements)!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 Builder.load_string("""
+
 
 <LoginWindow>:
     login_button: but1
@@ -13,12 +20,6 @@ Builder.load_string("""
     text_input2: TI2
     login_label: lab1
     FloatLayout:
-        canvas.before:
-            Color:
-                rgba: 0, 0, 0, 0.2
-            Rectangle:
-                pos: self.pos
-                size: self.size
         Label:
             id: lab1
             text: "Авторизация"
@@ -102,19 +103,19 @@ Builder.load_string("""
     cursor_color: "white"
     padding:20
     color: "white"
-    font_size: 50
+    font_size: 30
     size_hint: 0.7, 0.05
 """)
 
 
-class LoginWindow(Screen):  # Главное окно
+class LoginWindow(Screen):
     text_input1 = ObjectProperty()
     text_input2 = ObjectProperty()
     login_button = ObjectProperty()
     login_label = ObjectProperty()
 
+
     def __init__(self, **kwargs):
-        self.animation = Animation(opacity=1, duration=0.1)
         super().__init__(**kwargs)
 
     def switch_to_load_screen(self):
