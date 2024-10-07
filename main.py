@@ -7,8 +7,6 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.screenmanager import SlideTransition
 from kivy.lang import Builder
 
-import cv2
-
 #В БИЛДОЗЕР ЕЩЕ ДОБАВИТЬ ffpyplayer (requirements)!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 Builder.load_string("""
