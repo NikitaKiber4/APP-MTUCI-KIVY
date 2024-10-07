@@ -103,7 +103,7 @@ Builder.load_string("""
     cursor_color: "white"
     padding:20
     color: "white"
-    font_size: 30
+    font_size: 50
     size_hint: 0.7, 0.05
 """)
 
@@ -144,4 +144,4 @@ class MTUCIApp(App):
 
 
 if __name__ == "__main__":
-    TestApp().run()
+    MTUCIApp().run()
