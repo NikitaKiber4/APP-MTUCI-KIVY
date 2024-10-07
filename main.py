@@ -99,10 +99,10 @@ Builder.load_string("""
     border_color: 1, 1, 1, 1
     border_width: 1.2
     cursor_color: "white"
-    padding:20
+    padding:28
     color: "white"
     font_size: 50
-    size_hint: 0.7, 0.05
+    size_hint: 0.7, 0.055
 """)
 
 
