@@ -11,7 +11,6 @@ Builder.load_string("""
 
 
 <LoginWindow>:
-    mywidth: root.mywidth
 
     login_button: but1
     text_input1: TI1
@@ -57,10 +56,14 @@ Builder.load_string("""
         RoundedTextInput:
             id:TI1
             pos_hint: {"center_x": 0.5, "center_y": 0.56}
+            font_size: root.font_checker()
+            padding: root.padding_fit()
 
         RoundedTextInput:
             id:TI2
             pos_hint: {"center_x": 0.5, "center_y": 0.46}
+            font_size: root.font_checker()
+            padding: root.padding_fit()
     BoxLayout:
         Label:
             size_hint: 0.0028, 0.05
@@ -117,7 +120,7 @@ Builder.load_string("""
         Line:
             width: self.border_width
             rounded_rectangle: (self.x, self.y, self.width, self.height, self.radius)
-    border_color: 0, 0, 0, 0
+    border_color: 0, 0, 0, 1
     border_width: 2
     bg_color: 0, 1, 0, 0.1
     radius: 50
@@ -151,9 +154,7 @@ Builder.load_string("""
     border_color: [0.2, 0, 0.7, 0.8]
     border_width: 1.2
     cursor_color: [0.2, 0, 0.7, 0.8]
-    padding:26
     color: [0.2, 0, 0.7, 0.8]
-    font_size: 50
     font_name:"font.ttf"
     size_hint: 0.7, 0.055
 
@@ -198,8 +199,6 @@ class LoginWindow(Screen):
     login_border = ObjectProperty()
     organization_logo = ObjectProperty()
     check_box1 = ObjectProperty()
-    mywidth = NumericProperty(Window.width)
-
 
 
     def __init__(self, **kwargs):
@@ -216,12 +215,22 @@ class LoginWindow(Screen):
         self.login_button.bg_color = [0.2, 0, 0.7, 0.8]
 
     def return_label_x(self):
-        print(int((0.55+0.08)*Window.size[0])/len(str(Window.size[0])))
         return int((0.55+0.08)*Window.size[0])/1000
 
-    def return_label_size(self):
-        print(Window.size[0]/6000)
-        return Window.size[0]/6000
+    def padding_fit(self):
+        wwidth = Window.size[1]
+        approx_wide = 650
+        padding = 2
+        while wwidth > approx_wide:
+            approx_wide += 100
+            padding += 1.5
+        return padding
+
+    def font_checker(self):
+        if Window.size[1]<1600:
+            return 40
+        else:
+            return 50
 
 
 
