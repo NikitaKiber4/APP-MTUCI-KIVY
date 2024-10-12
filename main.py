@@ -1,6 +1,6 @@
 from kivy.app import App
 
-from kivy.properties import ObjectProperty, StringProperty, NumericProperty
+from kivy.properties import ObjectProperty
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.screenmanager import SlideTransition
 from kivy.clock import Clock
@@ -11,13 +11,15 @@ Builder.load_string("""
 
 
 <LoginWindow>:
-
+    
     login_button: but1
     text_input1: TI1
     text_input2: TI2
     login_label: lab1
     organization_logo: logo
     check_box1: chk_bx1
+    hint2_txt: hint2_txt
+    hint_txt: hint_txt
 
     FloatLayout:
         canvas.before:
@@ -52,18 +54,42 @@ Builder.load_string("""
             on_release:
                 self.bg_color =  [0.2, 0, 0.7, 0.8]
                 root.switch_to_load_screen()
-
+        
+        Label:
+            id: hint_txt
+            text: "Почта МТУСИ"
+            color: "grey"
+            pos_hint: {"center_x": 0.34, "center_y": 0.56}
+            font_size: root.font_checker()-5
+            padding: root.padding_fit()
+            font_name:"font.ttf"
+            size_hint: 0.7, 0.055
+            
         RoundedTextInput:
             id:TI1
             pos_hint: {"center_x": 0.5, "center_y": 0.56}
             font_size: root.font_checker()
             padding: root.padding_fit()
-
+            on_focus: root.on_focus(self, self.focus)
+            
+        Label:
+            id: hint2_txt
+            text: "Пароль"
+            color: "grey"
+            pos_hint: {"center_x": 0.27, "center_y": 0.46}
+            font_size: root.font_checker()-5
+            padding: root.padding_fit()
+            font_name:"font.ttf"
+            size_hint: 0.7, 0.055
+        
         RoundedTextInput:
             id:TI2
             pos_hint: {"center_x": 0.5, "center_y": 0.46}
             font_size: root.font_checker()
             padding: root.padding_fit()
+            on_focus: root.on_focus(self, self.focus)
+            
+            
     BoxLayout:
         Label:
             size_hint: 0.0028, 0.05
@@ -157,6 +183,9 @@ Builder.load_string("""
     color: [0.2, 0, 0.7, 0.8]
     font_name:"font.ttf"
     size_hint: 0.7, 0.055
+    multiline: False
+    
+    
 
 <LoginBorder@Widget>:
     background_color: 0, 0, 0, 0
@@ -199,6 +228,8 @@ class LoginWindow(Screen):
     login_border = ObjectProperty()
     organization_logo = ObjectProperty()
     check_box1 = ObjectProperty()
+    hint_txt = ObjectProperty()
+    hint2_txt = ObjectProperty()
 
 
     def __init__(self, **kwargs):
@@ -231,6 +262,19 @@ class LoginWindow(Screen):
             return 40
         else:
             return 50
+
+    def on_focus(self, instance, value):
+        if instance == self.text_input1:
+            if value == 1 and instance.text=="":
+                self.hint_txt.text = ""
+            elif value == 0 and instance.text=="":
+                self.hint_txt.text = "Почта МТУСИ"
+        elif instance == self.text_input2:
+            if value == 1 and instance.text=="":
+                self.hint2_txt.text = ""
+            elif value == 0 and instance.text=="":
+                self.hint2_txt.text = "Пароль"
+
 
 
 
