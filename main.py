@@ -146,7 +146,7 @@ Builder.load_string("""
         Line:
             width: self.border_width
             rounded_rectangle: (self.x, self.y, self.width, self.height, self.radius)
-    border_color: 0, 0, 0, 1
+    border_color: 0, 0, 0, 0
     border_width: 2
     bg_color: 0, 1, 0, 0.1
     radius: 50
