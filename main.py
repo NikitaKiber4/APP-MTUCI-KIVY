@@ -15,9 +15,15 @@ Builder.load_string("""
     login_button: but1
     text_input1: TI1
     text_input2: TI2
+    open_eye: open_eye
+    closed_eye: closed_eye
+    eye_button: eye_bttn
     login_label: lab1
     organization_logo: logo
-    check_box1: chk_bx1
+    checkbox_img1: chck1_img
+    checkbox_button: chkbx_but
+    rememberme_label: rembme_lab
+    checkbox_img2: chck2_img
     hint2_txt: hint2_txt
     hint_txt: hint_txt
 
@@ -88,47 +94,61 @@ Builder.load_string("""
             font_size: root.font_checker()
             padding: root.padding_fit()
             on_focus: root.on_focus(self, self.focus)
+            password: True
+        
+        Image:
+            id: open_eye
+            source: "eye_open.png"
+            size_hint: 0.7, 0.058
+            pos_hint: {"center_x": 0.78, "center_y": 0.46}
+            opacity: 1
             
-            
-    BoxLayout:
+        Button:
+            opacity: 0
+            id: eye_bttn
+            size_hint: 0.13, 0.06
+            pos_hint: {"center_x": 0.78, "center_y": 0.46}
+            on_release: root.eye_switch()
+        
+        Image:
+            id: closed_eye
+            source: "eye_close.png"
+            size_hint: 0.7, 0.058
+            pos_hint: {"center_x": 0.78, "center_y": 0.46}
+            opacity: 0
+        
+        Image:
+            id:chck1_img
+            source: "CheckBpx1.png"
+            pos_hint: {"center_y":0.38, "center_x":0.2}
+            size_hint: 0.09, 0.09
+        
+        Button:
+            id: chkbx_but
+            background_color: 0, 0, 1, 0
+            background_normal: ""
+            pos_hint: {"center_y":0.38, "center_x":0.2}
+            size_hint: 0.052, 0.072
+            on_release:
+                root.checkbox_switch()
+        
+        Image:
+            id:chck2_img
+            source: "CheckBpx2.png"
+            pos_hint: {"center_y":0.38, "center_x":0.2}
+            size_hint: 0.09, 0.09
+            opacity: 0
+        
         Label:
-            size_hint: 0.0028, 0.05
-            pos_hint: {"center_y":0.39}
-
-        CCheckbox:
-            id: chk_bx1
-
-        Label:
-            size_hint: 0.0005, 0.05
-            pos_hint: {"center_y":0.39}
-
-        Label:
-            pos_hint: {"x": root.return_label_x(), "center_y":0.39}
-            size_hint: 0.005, 0.03
+            id: rembme_lab
+            font_name: "font.ttf"
+            font_size: root.font_checker()-10
             text: "Запомнить меня"
-            color: [0.3, 0, 0.7, 0.8]
-            font_size:30
-            font_name:"font.ttf"
+            color: (30/255, 11/255, 156/255, 1)
+            pos_hint: {"center_y":0.38, "center_x":0.44}
+            
+    
 
-        Label:
-            size_hint: 0.005, 0.05
-            pos_hint: {"center_y":0.39}
-
-<CCheckbox@Button>:
-    background_color: 0, 0, 0, 0
-    background_normal: ""
-    pos_hint: {"center_y":0.39}
-    size_hint: 0.0016, 0.04
-    canvas.before:
-        Color:
-            rgba: self.border_color
-        Line:
-            width: self.border_width
-            rounded_rectangle: (self.x, self.y, self.width, self.height, self.radius)
-
-    border_color: [150/255, 150/255, 150/255, 1]
-    radius: 15
-    border_width: 1.5
 
 <RoundedButton@Button>:
     background_color: 0, 0, 0, 0
@@ -227,15 +247,25 @@ class LoginWindow(Screen):
     login_label = ObjectProperty()
     login_border = ObjectProperty()
     organization_logo = ObjectProperty()
-    check_box1 = ObjectProperty()
+    checkbox_img1: ObjectProperty()
+    checkbox_button: ObjectProperty()
+    rememberme_label: ObjectProperty()
+    checkbox_img2: ObjectProperty()
     hint_txt = ObjectProperty()
     hint2_txt = ObjectProperty()
+    open_eye = ObjectProperty()
+    closed_eye = ObjectProperty()
+    eye_button = ObjectProperty()
+
+    skip_login_window = False
 
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     def switch_to_load_screen(self):
+        if self.skip_login_window:
+            pass                                                            #Написать сохранение личных данных
         self.manager.transition = SlideTransition(direction="down")
         self.manager.current = 'load_sc'
 
@@ -275,6 +305,23 @@ class LoginWindow(Screen):
             elif value == 0 and instance.text=="":
                 self.hint2_txt.text = "Пароль"
 
+    def checkbox_switch(self):
+        if self.checkbox_img2.opacity==0:
+            self.checkbox_img2.opacity=1
+            self.skip_login_window = True
+        else:
+            self.checkbox_img2.opacity = 0
+            self.skip_login_window = False
+
+    def eye_switch(self):
+        if self.open_eye.opacity == 1:
+            self.open_eye.opacity = 0
+            self.closed_eye.opacity = 1
+            self.text_input2.password = False
+        else:
+            self.open_eye.opacity = 1
+            self.closed_eye.opacity = 0
+            self.text_input2.password = True
 
 
 
