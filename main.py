@@ -15,6 +15,9 @@ Builder.load_string("""
     login_button: but1
     text_input1: TI1
     text_input2: TI2
+    open_eye: open_eye
+    closed_eye: closed_eye
+    eye_button: eye_bttn
     login_label: lab1
     organization_logo: logo
     checkbox_img1: chck1_img
@@ -91,37 +94,58 @@ Builder.load_string("""
             font_size: root.font_checker()
             padding: root.padding_fit()
             on_focus: root.on_focus(self, self.focus)
+            password: True
         
+        Image:
+            id: open_eye
+            source: "eye_open.png"
+            size_hint: 0.7, 0.058
+            pos_hint: {"center_x": 0.78, "center_y": 0.46}
+            opacity: 1
+            
+        Button:
+            opacity: 0
+            id: eye_bttn
+            size_hint: 0.13, 0.06
+            pos_hint: {"center_x": 0.78, "center_y": 0.46}
+            on_release: root.eye_switch()
+        
+        Image:
+            id: closed_eye
+            source: "eye_close.png"
+            size_hint: 0.7, 0.058
+            pos_hint: {"center_x": 0.78, "center_y": 0.46}
+            opacity: 0
         
         Image:
             id:chck1_img
-            source: "chck1.png"
-            pos_hint: {"center_y":0.38, "center_x":0.18}
+            source: "CheckBpx1.png"
+            pos_hint: {"center_y":0.38, "center_x":0.2}
             size_hint: 0.09, 0.09
         
         Button:
             id: chkbx_but
             background_color: 0, 0, 1, 0
             background_normal: ""
-            pos_hint: {"center_y":0.38, "center_x":0.18}
+            pos_hint: {"center_y":0.38, "center_x":0.2}
             size_hint: 0.052, 0.072
             on_release:
                 root.checkbox_switch()
         
         Image:
             id:chck2_img
-            source: "chck2.png"
-            pos_hint: {"center_y":0.38, "center_x":0.18}
-            size_hint: 0.06, 0.06
+            source: "CheckBpx2.png"
+            pos_hint: {"center_y":0.38, "center_x":0.2}
+            size_hint: 0.09, 0.09
             opacity: 0
         
         Label:
             id: rembme_lab
             font_name: "font.ttf"
-            font_size: 30
+            font_size: root.font_checker()-10
             text: "Запомнить меня"
             color: (30/255, 11/255, 156/255, 1)
-            pos_hint: {"center_y":0.38, "center_x":0.34}
+            pos_hint: {"center_y":0.38, "center_x":0.44}
             
     
 
@@ -229,12 +253,19 @@ class LoginWindow(Screen):
     checkbox_img2: ObjectProperty()
     hint_txt = ObjectProperty()
     hint2_txt = ObjectProperty()
+    open_eye = ObjectProperty()
+    closed_eye = ObjectProperty()
+    eye_button = ObjectProperty()
+
+    skip_login_window = False
 
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     def switch_to_load_screen(self):
+        if self.skip_login_window:
+            pass                                                            #Написать сохранение личных данных
         self.manager.transition = SlideTransition(direction="down")
         self.manager.current = 'load_sc'
 
@@ -277,8 +308,20 @@ class LoginWindow(Screen):
     def checkbox_switch(self):
         if self.checkbox_img2.opacity==0:
             self.checkbox_img2.opacity=1
+            self.skip_login_window = True
         else:
             self.checkbox_img2.opacity = 0
+            self.skip_login_window = False
+
+    def eye_switch(self):
+        if self.open_eye.opacity == 1:
+            self.open_eye.opacity = 0
+            self.closed_eye.opacity = 1
+            self.text_input2.password = False
+        else:
+            self.open_eye.opacity = 1
+            self.closed_eye.opacity = 0
+            self.text_input2.password = True
 
 
 
