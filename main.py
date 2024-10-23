@@ -41,7 +41,7 @@ Builder.load_string("""
         Image:
             id: logo
             source: "logo.png"
-            pos_hint: {"center_x": 0.5, "center_y": 0.88}
+            pos_hint: {"center_x": 0.48, "center_y": 0.88}
             size_hint: 0.6, 0.6
 
         Label:
@@ -99,9 +99,9 @@ Builder.load_string("""
         Image:
             id: open_eye
             source: "eye_open.png"
-            size_hint: 0.7, 0.058
+            size_hint: 0.6, 0.05
             pos_hint: {"center_x": 0.78, "center_y": 0.46}
-            opacity: 1
+            opacity: 0
             
         Button:
             opacity: 0
@@ -113,9 +113,9 @@ Builder.load_string("""
         Image:
             id: closed_eye
             source: "eye_close.png"
-            size_hint: 0.7, 0.058
+            size_hint: 0.58, 0.048
             pos_hint: {"center_x": 0.78, "center_y": 0.46}
-            opacity: 0
+            opacity: 1
         
         Image:
             id:chck1_img
@@ -128,7 +128,7 @@ Builder.load_string("""
             background_color: 0, 0, 1, 0
             background_normal: ""
             pos_hint: {"center_y":0.38, "center_x":0.2}
-            size_hint: 0.052, 0.072
+            size_hint: 0.08, 0.076
             on_release:
                 root.checkbox_switch()
         
@@ -201,7 +201,7 @@ Builder.load_string("""
     border_width: 1.2
     cursor_color: [0.2, 0, 0.7, 0.8]
     color: [0.2, 0, 0.7, 0.8]
-    font_name:"font.ttf"
+    font_name:"font_medium.ttf"
     size_hint: 0.7, 0.055
     multiline: False
     
@@ -222,7 +222,9 @@ Builder.load_string("""
     border_color: [0.2, 0, 0.7, 0.8]
 
 <LoadingScreen>:
+
     test_button:but2
+    
     FloatLayout:
         canvas.before:
             Color:
@@ -230,11 +232,13 @@ Builder.load_string("""
             Rectangle:
                 size: self.size
                 pos: self.pos
+        
         Button:
             id:but2
             size_hint: 0.5, 0.5
             on_release: root.switch_to_login_screen()
-
+        
+                
 
 """)
 
@@ -265,8 +269,8 @@ class LoginWindow(Screen):
 
     def switch_to_load_screen(self):
         if self.skip_login_window:
-            pass                                                            #Написать сохранение личных данных
-        self.manager.transition = SlideTransition(direction="down")
+            pass                                                        #Написать сохранение личных данных
+        self.manager.transition = SlideTransition(direction="down", duration=0.3)
         self.manager.current = 'load_sc'
 
     def button_blure(self):
@@ -317,11 +321,11 @@ class LoginWindow(Screen):
         if self.open_eye.opacity == 1:
             self.open_eye.opacity = 0
             self.closed_eye.opacity = 1
-            self.text_input2.password = False
+            self.text_input2.password = True
         else:
             self.open_eye.opacity = 1
             self.closed_eye.opacity = 0
-            self.text_input2.password = True
+            self.text_input2.password = False
 
 
 
@@ -332,7 +336,7 @@ class LoadingScreen(Screen):
         super().__init__(**kwargs)
 
     def switch_to_login_screen(self):
-        self.manager.transition = SlideTransition(direction="up")
+        self.manager.transition = SlideTransition(direction="up", duration=0.3)
         self.manager.current = 'login_sc'
 
 
