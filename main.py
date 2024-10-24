@@ -1,3 +1,4 @@
+from kivy.animation import Animation
 from kivy.app import App
 
 from kivy.properties import ObjectProperty
@@ -6,6 +7,10 @@ from kivy.uix.screenmanager import SlideTransition
 from kivy.clock import Clock
 from kivy.lang import Builder
 from kivy.core.window import Window
+
+from kivy.uix.effectwidget import EffectWidget
+from kivy.graphics import Color, Rectangle
+
 
 Builder.load_string("""
 
@@ -168,7 +173,6 @@ Builder.load_string("""
             rounded_rectangle: (self.x, self.y, self.width, self.height, self.radius)
     border_color: 0, 0, 0, 0
     border_width: 2
-    bg_color: 0, 1, 0, 0.1
     radius: 50
     color: "white"
     bg_color: [0.2, 0, 0.6, 0.8]
@@ -263,15 +267,37 @@ class LoginWindow(Screen):
 
     skip_login_window = False
 
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+        self.blure_active = False
+        self.blure = EffectWidget(size_hint=(1, 1), opacity=0)
+        with self.blure.canvas.before:
+            Color(.9, .9, .9, 0.8)
+            self.blure_rect = Rectangle(pos=(0, 0), size = (Window.size[0], Window.size[1]))
+        self.add_widget(self.blure)
+        Window.bind(size=self.on_resize)
+
 
     def switch_to_load_screen(self):
         if self.skip_login_window:
             pass                                                        #Написать сохранение личных данных
-        self.manager.transition = SlideTransition(direction="down", duration=0.3)
-        self.manager.current = 'load_sc'
+
+        self.text_input1.disabled = not self.text_input1.disabled
+        self.text_input2.disabled = not self.text_input2.disabled
+        self.eye_button.disabled = not self.eye_button.disabled
+        self.checkbox_button.disabled = not self.checkbox_button.disabled
+        #self.login_button.disabled = not self.login_button.disabled
+
+        blure_anim = Animation(opacity = 1 if not self.blure_active else 0, duration=0.1)
+        blure_anim.start(self.blure)
+        self.blure_active = not self.blure_active
+
+        #self.manager.transition = SlideTransition(direction="down", duration=0.3)
+        #self.manager.current = 'load_sc'
+
+    def on_resize(self, *args):
+        self.blure_rect.size = (Window.size[0], Window.size[1])
 
     def button_blure(self):
         Clock.schedule_once(lambda dt: self.return_button_color(), 0.5)
@@ -329,6 +355,8 @@ class LoginWindow(Screen):
 
 
 
+
+
 class LoadingScreen(Screen):
     test_button = ObjectProperty()
 
@@ -338,6 +366,8 @@ class LoadingScreen(Screen):
     def switch_to_login_screen(self):
         self.manager.transition = SlideTransition(direction="up", duration=0.3)
         self.manager.current = 'login_sc'
+
+
 
 
 class MTUCIApp(App):
