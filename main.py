@@ -167,7 +167,7 @@ Builder.load_string("""
         Image:
             id: load_logo
             source: "loading_logo.png"
-            size_hint: 0.2, 0.2
+            size_hint: 0.35, 0.35
             pos_hint: {"center_x":0.5, "center_y": 0.5}
             opacity:0
             
@@ -315,22 +315,22 @@ class LoginWindow(Screen):
         #self.manager.current = 'load_sc'
 
     def loading_process(self, start):
-        pulsing_down = Animation(opacity = 0.3, size_hint=(.15, 0.15), duration=0.4)
-        pulsing_up = Animation(opacity=1, size_hint=(0.2, 0.2), duration=0.3)
+        pulsing_down = Animation(opacity = 0.3, size_hint=(.3, 0.3), duration=0.4)
+        pulsing_up = Animation(opacity=1, size_hint=(0.35, 0.35), duration=0.3)
 
         def cycle(dt):
-            pulsing_up.bind(on_complete=lambda *args: pulsing_down.start(self.loading_logo))
-            pulsing_up.start(self.loading_logo)
+            pulsing_down.bind(on_complete=lambda *args: pulsing_up.start(self.loading_logo))
+            pulsing_down.start(self.loading_logo)
 
         if start:
-            if self.scheduled_event is None:  # Проверяем, не запланировано ли уже событие
+            if self.scheduled_event is None:
                 self.loading_logo.pos_hint = {"center_x":0.5, "center_y":0.5}
-                cycle(0)  # Запускаем цикл сразу
+                cycle(0)
                 self.scheduled_event = Clock.schedule_interval(cycle, 1.4)
         else:
-            if self.scheduled_event is not None:  # Проверяем, есть ли запланированное событие
+            if self.scheduled_event is not None:
                 Clock.unschedule(self.scheduled_event)
-                self.scheduled_event = None  # Сбрасываем ссылку
+                self.scheduled_event = None
                 self.loading_logo.pos_hint = {"center_x":-0.5, "center_y":-0.5}
 
 
