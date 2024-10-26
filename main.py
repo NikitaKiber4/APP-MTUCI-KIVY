@@ -8,10 +8,6 @@ from kivy.clock import Clock
 from kivy.lang import Builder
 from kivy.core.window import Window
 
-from kivy.uix.effectwidget import EffectWidget
-from kivy.graphics import Color, Rectangle
-
-
 Builder.load_string("""
 
 
@@ -31,6 +27,8 @@ Builder.load_string("""
     checkbox_img2: chck2_img
     hint2_txt: hint2_txt
     hint_txt: hint_txt
+    loading_logo: load_logo
+    blure: blure
 
     FloatLayout:
         canvas.before:
@@ -76,12 +74,37 @@ Builder.load_string("""
             font_name:"font.ttf"
             size_hint: 0.7, 0.055
             
-        RoundedTextInput:
+        TextInput:
             id:TI1
+            background_color: 0, 0, 0, 0
+            canvas.before:
+                Color:
+                    rgba: self.bg_color
+                RoundedRectangle:
+                    size: self.size
+                    pos: self.pos
+                    radius: [self.radius] * 4
+                Color:
+                    rgba: self.border_color
+                Line:
+                    width: 1.2   #СЕЛФ ПИДАРАС НЕ РАБОТАЕТ
+                    rounded_rectangle: (self.x, self.y, self.width, self.height, self.radius)
+        
+        
+            bg_color: 1, 1, 1, 0
+            radius: 50
+            border_color: [0.2, 0, 0.7, 0.8]
+            border_width: 1.2
+            cursor_color: [0.2, 0, 0.7, 0.8]
+            color: [0.2, 0, 0.7, 0.8]
+            font_name:"font_medium.ttf"
+            size_hint: 0.7, 0.055
+            multiline: False
             pos_hint: {"center_x": 0.5, "center_y": 0.56}
             font_size: root.font_checker()
             padding: root.padding_fit()
             on_focus: root.on_focus(self, self.focus)
+                
             
         Label:
             id: hint2_txt
@@ -93,18 +116,42 @@ Builder.load_string("""
             font_name:"font.ttf"
             size_hint: 0.7, 0.055
         
-        RoundedTextInput:
+        TextInput:
             id:TI2
-            pos_hint: {"center_x": 0.5, "center_y": 0.46}
+            background_color: 0, 0, 0, 0
+            canvas.before:
+                Color:
+                    rgba: self.bg_color
+                RoundedRectangle:
+                    size: self.size[0]*1.19, self.size[1]
+                    pos: self.pos
+                    radius: [self.radius] * 4
+                Color:
+                    rgba: self.border_color
+                Line:
+                    width: 1.2   #СЕЛФ ПИДАРАС НЕ РАБОТАЕТ
+                    rounded_rectangle: (self.x, self.y, self.size[0]*1.19, self.size[1], self.radius)
+        
+        
+            bg_color: 1, 1, 1, 0
+            radius: 50
+            border_color: [0.2, 0, 0.7, 0.8]
+            border_width: 1.2
+            cursor_color: [0.2, 0, 0.7, 0.8]
+            color: [0.2, 0, 0.7, 0.8]
+            font_name:"font_medium.ttf"
+            multiline: False
+            pos_hint: {"center_x": 0.4450825, "center_y": 0.46}
             font_size: root.font_checker()
             padding: root.padding_fit()
             on_focus: root.on_focus(self, self.focus)
             password: True
+            size_hint: 0.590165, 0.055
         
         Image:
             id: open_eye
             source: "eye_open.png"
-            size_hint: 0.6, 0.05
+            size_hint: 0.56, 0.046
             pos_hint: {"center_x": 0.78, "center_y": 0.46}
             opacity: 0
             
@@ -118,7 +165,7 @@ Builder.load_string("""
         Image:
             id: closed_eye
             source: "eye_close.png"
-            size_hint: 0.58, 0.048
+            size_hint: 0.54, 0.044
             pos_hint: {"center_x": 0.78, "center_y": 0.46}
             opacity: 1
         
@@ -151,9 +198,28 @@ Builder.load_string("""
             text: "Запомнить меня"
             color: (30/255, 11/255, 156/255, 1)
             pos_hint: {"center_y":0.38, "center_x":0.44}
+        
+        EffectWidget:
+            id: blure
+            size_hint: (1, 1)
+            opacity: 0
             
-    
-
+            canvas.before:
+                Color:
+                    rgba: (0.9, 0.9, 0.9, 0.8)
+                Rectangle:
+                    pos:self.pos
+                    size:self.size
+            
+    FloatLayout:
+        Image:
+            id: load_logo
+            source: "loading_logo.png"
+            size_hint: 0.35, 0.35
+            pos_hint: {"center_x":0.5, "center_y": 0.5}
+            opacity:0
+            
+            
 
 <RoundedButton@Button>:
     background_color: 0, 0, 0, 0
@@ -164,7 +230,7 @@ Builder.load_string("""
         RoundedRectangle:
             size: self.size
             pos: self.pos
-            radius: [self.radius] * 4 #b
+            radius: [self.radius] * 4
 
         Color:
             rgba: self.border_color
@@ -181,36 +247,8 @@ Builder.load_string("""
     font_name:"font.ttf"
     size_hint: 0.5, 0.1
     pos_hint: {"center_x": 0.5, "center_y": 0.3}
-
-<RoundedTextInput@TextInput>:
-    background_color: 0, 0, 0, 0
-    canvas.before:
-        Color:
-            rgba: self.bg_color
-        RoundedRectangle:
-            size: self.size
-            pos: self.pos
-            radius: [self.radius] * 4
-
-        Color:
-            rgba: self.border_color
-        Line:
-            width: 1.2   #СЕЛФ ПИДАРАС НЕ РАБОТАЕТ
-            rounded_rectangle: (self.x, self.y, self.width, self.height, self.radius)
-
-
-    bg_color: 1, 1, 1, 0
-    radius: 50
-    border_color: [0.2, 0, 0.7, 0.8]
-    border_width: 1.2
-    cursor_color: [0.2, 0, 0.7, 0.8]
-    color: [0.2, 0, 0.7, 0.8]
-    font_name:"font_medium.ttf"
-    size_hint: 0.7, 0.055
-    multiline: False
-    
-    
-
+  
+  
 <LoginBorder@Widget>:
     background_color: 0, 0, 0, 0
     background_normal: ""
@@ -224,6 +262,7 @@ Builder.load_string("""
     radius: 50
     border_width: 3
     border_color: [0.2, 0, 0.7, 0.8]
+
 
 <LoadingScreen>:
 
@@ -242,8 +281,6 @@ Builder.load_string("""
             size_hint: 0.5, 0.5
             on_release: root.switch_to_login_screen()
         
-                
-
 """)
 
 
@@ -264,19 +301,17 @@ class LoginWindow(Screen):
     open_eye = ObjectProperty()
     closed_eye = ObjectProperty()
     eye_button = ObjectProperty()
+    loading_logo = ObjectProperty()
+    blure = ObjectProperty()
+
+
 
     skip_login_window = False
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
         self.blure_active = False
-        self.blure = EffectWidget(size_hint=(1, 1), opacity=0)
-        with self.blure.canvas.before:
-            Color(.9, .9, .9, 0.8)
-            self.blure_rect = Rectangle(pos=(0, 0), size = (Window.size[0], Window.size[1]))
-        self.add_widget(self.blure)
-        Window.bind(size=self.on_resize)
+        self.scheduled_event = None
 
 
     def switch_to_load_screen(self):
@@ -287,14 +322,36 @@ class LoginWindow(Screen):
         self.text_input2.disabled = not self.text_input2.disabled
         self.eye_button.disabled = not self.eye_button.disabled
         self.checkbox_button.disabled = not self.checkbox_button.disabled
-        #self.login_button.disabled = not self.login_button.disabled
 
         blure_anim = Animation(opacity = 1 if not self.blure_active else 0, duration=0.1)
         blure_anim.start(self.blure)
+
+        self.loading_process(not self.blure_active)
+
         self.blure_active = not self.blure_active
 
         #self.manager.transition = SlideTransition(direction="down", duration=0.3)
         #self.manager.current = 'load_sc'
+
+    def loading_process(self, start):
+        pulsing_down = Animation(opacity = 0.3, size_hint=(.3, 0.3), duration=0.4)
+        pulsing_up = Animation(opacity=1, size_hint=(0.35, 0.35), duration=0.3)
+
+        def cycle(dt):
+            pulsing_down.bind(on_complete=lambda *args: pulsing_up.start(self.loading_logo))
+            pulsing_down.start(self.loading_logo)
+
+        if start:
+            if self.scheduled_event is None:
+                self.loading_logo.pos_hint = {"center_x":0.5, "center_y":0.5}
+                cycle(0)
+                self.scheduled_event = Clock.schedule_interval(cycle, 1.4)
+        else:
+            if self.scheduled_event is not None:
+                Clock.unschedule(self.scheduled_event)
+                self.scheduled_event = None
+                self.loading_logo.pos_hint = {"center_x":-0.5, "center_y":-0.5}
+
 
     def on_resize(self, *args):
         self.blure_rect.size = (Window.size[0], Window.size[1])
@@ -353,8 +410,8 @@ class LoginWindow(Screen):
             self.closed_eye.opacity = 0
             self.text_input2.password = False
 
-
-
+    """def text_inp2_size(self):
+        return Window.size[0], Window.size[1]"""
 
 
 class LoadingScreen(Screen):
@@ -366,8 +423,6 @@ class LoadingScreen(Screen):
     def switch_to_login_screen(self):
         self.manager.transition = SlideTransition(direction="up", duration=0.3)
         self.manager.current = 'login_sc'
-
-
 
 
 class MTUCIApp(App):
