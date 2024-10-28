@@ -410,9 +410,6 @@ class LoginWindow(Screen):
             self.closed_eye.opacity = 0
             self.text_input2.password = False
 
-    """def text_inp2_size(self):
-        return Window.size[0], Window.size[1]"""
-
 
 class LoadingScreen(Screen):
     test_button = ObjectProperty()
