@@ -7,9 +7,6 @@ from kivy.clock import Clock
 from kivy.lang import Builder
 from kivy.core.window import Window
 
-import json
-import locale
-
 
 Builder.load_string("""
 
@@ -322,8 +319,8 @@ class LoginWindow(Screen):
         self.lang_loginbutton = 'Войти'
         self.language()
 
-    def language(self):
-        if locale.getdefaultlocale()[0]=='ru_RU':
+    def language(self):           # ДЕЛАЙ СМЕНУ ЯЗЫКА ОТ КОНФИГА
+        if True:
             self.lang_authorization = 'Авторизация'
             self.lang_rememberme = 'Запомнить меня'
             self.lang_hinttxt = 'почта МТУСИ'
