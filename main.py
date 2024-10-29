@@ -1,6 +1,6 @@
 from kivy.app import App
 from kivy.animation import Animation
-from kivy.properties import ObjectProperty, StringProperty
+from kivy.properties import ObjectProperty
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.screenmanager import SlideTransition
 from kivy.clock import Clock
