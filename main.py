@@ -1,12 +1,15 @@
-from kivy.animation import Animation
 from kivy.app import App
-
-from kivy.properties import ObjectProperty
+from kivy.animation import Animation
+from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.screenmanager import SlideTransition
 from kivy.clock import Clock
 from kivy.lang import Builder
 from kivy.core.window import Window
+
+import json
+import locale
+
 
 Builder.load_string("""
 
@@ -129,7 +132,7 @@ Builder.load_string("""
                 Color:
                     rgba: self.border_color
                 Line:
-                    width: 1.2   #СЕЛФ ПИДАРАС НЕ РАБОТАЕТ
+                    width: 1.2
                     rounded_rectangle: (self.x, self.y, self.size[0]*1.19, self.size[1], self.radius)
         
         
@@ -305,7 +308,6 @@ class LoginWindow(Screen):
     blure = ObjectProperty()
 
 
-
     skip_login_window = False
 
     def __init__(self, **kwargs):
@@ -313,10 +315,35 @@ class LoginWindow(Screen):
         self.blure_active = False
         self.scheduled_event = None
 
+        self.lang_authorization = 'Авторизация'
+        self.lang_rememberme = 'Запомнить меня'
+        self.lang_hinttxt = 'почта МТУСИ'
+        self.lang_hinttxt2 = 'Пароль'
+        self.lang_loginbutton = 'Войти'
+        self.language()
+
+    def language(self):
+        if locale.getdefaultlocale()[0]=='ru_RU':
+            self.lang_authorization = 'Авторизация'
+            self.lang_rememberme = 'Запомнить меня'
+            self.lang_hinttxt = 'почта МТУСИ'
+            self.lang_hinttxt2 = 'Пароль'
+            self.lang_loginbutton = 'Войти'
+        else:
+            self.lang_authorization = 'Authorisation'
+            self.login_label.text = 'Authorisation'
+            self.lang_rememberme = 'Remember me'
+            self.rememberme_label.text = 'Remember me'
+            self.lang_hinttxt = 'MTUCI mail     ' #5 spaces
+            self.hint_txt.text = 'MTUCI mail     '
+            self.lang_hinttxt2 = '    Password' #1 tab
+            self.hint2_txt.text = '    Password'
+            self.lang_loginbutton = 'Enter'
+            self.login_button.text = 'Enter'
 
     def switch_to_load_screen(self):
         if self.skip_login_window:
-            pass                                                        #Написать сохранение личных данных
+            pass                                                   #Написать сохранение личных данных
 
         self.text_input1.disabled = not self.text_input1.disabled
         self.text_input2.disabled = not self.text_input2.disabled
@@ -385,12 +412,12 @@ class LoginWindow(Screen):
             if value == 1 and instance.text=="":
                 self.hint_txt.text = ""
             elif value == 0 and instance.text=="":
-                self.hint_txt.text = "Почта МТУСИ"
+                self.hint_txt.text = self.lang_hinttxt
         elif instance == self.text_input2:
             if value == 1 and instance.text=="":
                 self.hint2_txt.text = ""
             elif value == 0 and instance.text=="":
-                self.hint2_txt.text = "Пароль"
+                self.hint2_txt.text = self.lang_hinttxt2
 
     def checkbox_switch(self):
         if self.checkbox_img2.opacity==0:
@@ -424,6 +451,7 @@ class LoadingScreen(Screen):
 
 class MTUCIApp(App):
     def build(self):
+        Window.set_icon('loading_logo.png')
         screen_manager = ScreenManager()
         screen_manager.add_widget(LoginWindow(name='login_sc'))
         screen_manager.add_widget(LoadingScreen(name='load_sc'))
