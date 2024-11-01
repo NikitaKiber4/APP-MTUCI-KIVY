@@ -1,13 +1,14 @@
-from kivy.animation import Animation
-from kivy.app import App
+import threading
+import time
 
+from kivy.app import App
+from kivy.animation import Animation
 from kivy.properties import ObjectProperty
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.screenmanager import SlideTransition
 from kivy.clock import Clock
 from kivy.lang import Builder
 from kivy.core.window import Window
-
 
 Builder.load_string("""
 
@@ -20,7 +21,7 @@ Builder.load_string("""
     open_eye: open_eye
     closed_eye: closed_eye
     eye_button: eye_bttn
-    login_label: lab1
+    authorisation_label: lab1
     organization_logo: logo
     checkbox_img1: chck1_img
     checkbox_button: chkbx_but
@@ -63,7 +64,7 @@ Builder.load_string("""
                 root.button_blure()
             on_release:
                 self.bg_color =  [0.2, 0, 0.7, 0.8]
-                root.switch_to_load_screen()
+                root.switch_to_main_screen()
         
         Label:
             id: hint_txt
@@ -75,12 +76,37 @@ Builder.load_string("""
             font_name:"font.ttf"
             size_hint: 0.7, 0.055
             
-        RoundedTextInput:
+        TextInput:
             id:TI1
+            background_color: 0, 0, 0, 0
+            canvas.before:
+                Color:
+                    rgba: self.bg_color
+                RoundedRectangle:
+                    size: self.size
+                    pos: self.pos
+                    radius: [self.radius] * 4
+                Color:
+                    rgba: self.border_color
+                Line:
+                    width: 1.2   #СЕЛФ ПИДАРАС НЕ РАБОТАЕТ
+                    rounded_rectangle: (self.x, self.y, self.width, self.height, self.radius)
+        
+        
+            bg_color: 1, 1, 1, 0
+            radius: 50
+            border_color: [0.2, 0, 0.7, 0.8]
+            border_width: 1.2
+            cursor_color: [0.2, 0, 0.7, 0.8]
+            color: [0.2, 0, 0.7, 0.8]
+            font_name:"font_medium.ttf"
+            size_hint: 0.7, 0.055
+            multiline: False
             pos_hint: {"center_x": 0.5, "center_y": 0.56}
             font_size: root.font_checker()
             padding: root.padding_fit()
             on_focus: root.on_focus(self, self.focus)
+                
             
         Label:
             id: hint2_txt
@@ -92,18 +118,42 @@ Builder.load_string("""
             font_name:"font.ttf"
             size_hint: 0.7, 0.055
         
-        RoundedTextInput:
+        TextInput:
             id:TI2
-            pos_hint: {"center_x": 0.5, "center_y": 0.46}
+            background_color: 0, 0, 0, 0
+            canvas.before:
+                Color:
+                    rgba: self.bg_color
+                RoundedRectangle:
+                    size: self.size[0]*1.19, self.size[1]
+                    pos: self.pos
+                    radius: [self.radius] * 4
+                Color:
+                    rgba: self.border_color
+                Line:
+                    width: 1.2
+                    rounded_rectangle: (self.x, self.y, self.size[0]*1.19, self.size[1], self.radius)
+        
+        
+            bg_color: 1, 1, 1, 0
+            radius: 50
+            border_color: [0.2, 0, 0.7, 0.8]
+            border_width: 1.2
+            cursor_color: [0.2, 0, 0.7, 0.8]
+            color: [0.2, 0, 0.7, 0.8]
+            font_name:"font_medium.ttf"
+            multiline: False
+            pos_hint: {"center_x": 0.4450825, "center_y": 0.46}
             font_size: root.font_checker()
             padding: root.padding_fit()
             on_focus: root.on_focus(self, self.focus)
             password: True
+            size_hint: 0.590165, 0.055
         
         Image:
             id: open_eye
             source: "eye_open.png"
-            size_hint: 0.6, 0.05
+            size_hint: 0.56, 0.046
             pos_hint: {"center_x": 0.78, "center_y": 0.46}
             opacity: 0
             
@@ -117,7 +167,7 @@ Builder.load_string("""
         Image:
             id: closed_eye
             source: "eye_close.png"
-            size_hint: 0.58, 0.048
+            size_hint: 0.54, 0.044
             pos_hint: {"center_x": 0.78, "center_y": 0.46}
             opacity: 1
         
@@ -172,7 +222,6 @@ Builder.load_string("""
             opacity:0
             
             
-    
 
 <RoundedButton@Button>:
     background_color: 0, 0, 0, 0
@@ -183,7 +232,7 @@ Builder.load_string("""
         RoundedRectangle:
             size: self.size
             pos: self.pos
-            radius: [self.radius] * 4 #b
+            radius: [self.radius] * 4
 
         Color:
             rgba: self.border_color
@@ -200,36 +249,8 @@ Builder.load_string("""
     font_name:"font.ttf"
     size_hint: 0.5, 0.1
     pos_hint: {"center_x": 0.5, "center_y": 0.3}
-
-
-<RoundedTextInput@TextInput>:
-    background_color: 0, 0, 0, 0
-    canvas.before:
-        Color:
-            rgba: self.bg_color
-        RoundedRectangle:
-            size: self.size
-            pos: self.pos
-            radius: [self.radius] * 4
-
-        Color:
-            rgba: self.border_color
-        Line:
-            width: 1.2   #СЕЛФ ПИДАРАС НЕ РАБОТАЕТ
-            rounded_rectangle: (self.x, self.y, self.width, self.height, self.radius)
-
-
-    bg_color: 1, 1, 1, 0
-    radius: 50
-    border_color: [0.2, 0, 0.7, 0.8]
-    border_width: 1.2
-    cursor_color: [0.2, 0, 0.7, 0.8]
-    color: [0.2, 0, 0.7, 0.8]
-    font_name:"font_medium.ttf"
-    size_hint: 0.7, 0.055
-    multiline: False
-    
-    
+  
+  
 <LoginBorder@Widget>:
     background_color: 0, 0, 0, 0
     background_normal: ""
@@ -245,7 +266,7 @@ Builder.load_string("""
     border_color: [0.2, 0, 0.7, 0.8]
 
 
-<LoadingScreen>:
+<MainScreen>:
 
     test_button:but2
     
@@ -257,9 +278,18 @@ Builder.load_string("""
                 size: self.size
                 pos: self.pos
         
+        Label:
+            text: "Главное окно"
+            font_size: 40
+            font_name: "font.ttf"
+            color: (.2, .2, .7, 1)
+            pos_hint: {"center_x":0.5, "center_y":0.7}
+            size_hint: 0.4, 0.09
+        
         Button:
             id:but2
-            size_hint: 0.5, 0.5
+            size_hint: 0.4, 0.2
+            pos_hint: {"center_x":0.5, "center_y":0.2}
             on_release: root.switch_to_login_screen()
         
 """)
@@ -270,7 +300,7 @@ class LoginWindow(Screen):
     text_input1 = ObjectProperty()
     text_input2 = ObjectProperty()
     login_button = ObjectProperty()
-    login_label = ObjectProperty()
+    authorisation_label = ObjectProperty()
     login_border = ObjectProperty()
     organization_logo = ObjectProperty()
     checkbox_img1: ObjectProperty()
@@ -286,35 +316,71 @@ class LoginWindow(Screen):
     blure = ObjectProperty()
 
 
-
     skip_login_window = False
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.blure_active = False
         self.scheduled_event = None
+        self.user_exists = False
+        self.successfully_downloaded = False
 
+        self.lang_authorization = 'Авторизация'
+        self.lang_rememberme = 'Запомнить меня'
+        self.lang_hinttxt = 'почта МТУСИ'
+        self.lang_hinttxt2 = 'Пароль'
+        self.lang_loginbutton = 'Войти'
+        self.language()
 
-    def switch_to_load_screen(self):
+        self.user_checking_thread = threading.Thread(target=self.user_checking)
+        self.data_downloading_thread = threading.Thread(target=self.data_downloading)
+
+    def language(self):           # ДЕЛАЙ СМЕНУ ЯЗЫКА ОТ КОНФИГА
+        if True:
+            self.lang_authorization = 'Авторизация'
+            self.lang_rememberme = 'Запомнить меня'
+            self.lang_hinttxt = 'почта МТУСИ'
+            self.lang_hinttxt2 = 'Пароль'
+            self.lang_loginbutton = 'Войти'
+        else:
+            self.lang_authorization = 'Authorisation'
+            self.authorisation_label.text = 'Authorisation'
+            self.lang_rememberme = 'Remember me'
+            self.rememberme_label.text = 'Remember me'
+            self.lang_hinttxt = 'MTUCI mail     ' #5 spaces
+            self.hint_txt.text = 'MTUCI mail     '
+            self.lang_hinttxt2 = '    Password' #1 tab
+            self.hint2_txt.text = '    Password'
+            self.lang_loginbutton = 'Enter'
+            self.login_button.text = 'Enter'
+
+    def switch_to_main_screen(self):
         if self.skip_login_window:
-            pass                                                        #Написать сохранение личных данных
+            pass                                                   #Написать сохранение личных данных
+
+        if self.text_input1.text == "" or self.text_input2.text == "":
+            if self.text_input1.text == "" and self.text_input2.text == "":
+                self.empty_strings(False)
+                self.empty_strings(True)
+            else:
+                self.empty_strings(self.text_input1.text == "")
+            return 0
+
+        self.loading_starter()
+
+        self.user_checking_thread.start()
+
+
+    def loading_process(self, start):
+        blure_anim = Animation(opacity=1 if not self.blure_active else 0, duration=0.1)
+        blure_anim.start(self.blure)
 
         self.text_input1.disabled = not self.text_input1.disabled
         self.text_input2.disabled = not self.text_input2.disabled
         self.eye_button.disabled = not self.eye_button.disabled
         self.checkbox_button.disabled = not self.checkbox_button.disabled
+        self.login_button.disabled = not self.login_button.disabled
 
-        blure_anim = Animation(opacity = 1 if not self.blure_active else 0, duration=0.1)
-        blure_anim.start(self.blure)
-
-        self.loading_process(not self.blure_active)
-
-        self.blure_active = not self.blure_active
-
-        #self.manager.transition = SlideTransition(direction="down", duration=0.3)
-        #self.manager.current = 'load_sc'
-
-    def loading_process(self, start):
         pulsing_down = Animation(opacity = 0.3, size_hint=(.3, 0.3), duration=0.4)
         pulsing_up = Animation(opacity=1, size_hint=(0.35, 0.35), duration=0.3)
 
@@ -333,6 +399,39 @@ class LoginWindow(Screen):
                 self.scheduled_event = None
                 self.loading_logo.pos_hint = {"center_x":-0.5, "center_y":-0.5}
 
+
+    def user_checking(self):
+        time.sleep(1)  # ПРОВЕРКА НА self.user_exists
+        self.user_exists = True
+        if self.user_exists:
+            Clock.schedule_once(self.start_downloading_thread)
+        else:
+            self.loading_starter()
+            self.user_checking_thread = threading.Thread(target=self.user_checking)
+            Clock.schedule_once(self.on_user_checking_complete)
+
+    def data_downloading(self):
+        time.sleep(1)  # СКАЧИВАНИЕ ДАННЫХ С БД
+        self.successfully_downloaded = True
+        if self.successfully_downloaded:
+            Clock.schedule_once(self.on_data_downloading_complete)
+        else:
+            pass                           #ТУТ НАДО НАВЕРНО ВООБНОВИТЬ ЗАГРУЗКУ И ПРИ НЕСКОЛЬКИХ НЕУДАЧАХ ПУСКАТЬ ОФФЛАЙН СЕССИЮ
+
+    def on_user_checking_complete(self, dt):
+        if not self.user_exists:
+            self.double_shaking()
+
+    def on_data_downloading_complete(self, dt):
+        self.data_downloading_thread = threading.Thread(target=self.data_downloading)
+        self.loading_starter()
+        self.manager.transition = SlideTransition(direction="down", duration=0.3)
+        self.manager.current = 'main_sc'
+
+    def start_downloading_thread(self, dt):
+        self.user_checking_thread = threading.Thread(target=self.user_checking)
+        self.data_downloading_thread = threading.Thread(target=self.data_downloading)
+        self.data_downloading_thread.start()
 
     def on_resize(self, *args):
         self.blure_rect.size = (Window.size[0], Window.size[1])
@@ -366,12 +465,12 @@ class LoginWindow(Screen):
             if value == 1 and instance.text=="":
                 self.hint_txt.text = ""
             elif value == 0 and instance.text=="":
-                self.hint_txt.text = "Почта МТУСИ"
+                self.hint_txt.text = self.lang_hinttxt
         elif instance == self.text_input2:
             if value == 1 and instance.text=="":
                 self.hint2_txt.text = ""
             elif value == 0 and instance.text=="":
-                self.hint2_txt.text = "Пароль"
+                self.hint2_txt.text = self.lang_hinttxt2
 
     def checkbox_switch(self):
         if self.checkbox_img2.opacity==0:
@@ -391,8 +490,59 @@ class LoginWindow(Screen):
             self.closed_eye.opacity = 0
             self.text_input2.password = False
 
+    def empty_strings(self, first_is_empty):
+        if first_is_empty:
+            target = self.hint_txt
+            poz1 = self.return_poz1()
+            poz2 = self.return_poz2()
+            poz3 = self.return_poz3()
+        else:
+            target = self.hint2_txt
+            poz1 = {"center_x": 0.29}
+            poz2 = {"center_x": 0.25}
+            poz3 = {"center_x": 0.27}
 
-class LoadingScreen(Screen):
+        target.color = (230/255, 10/255, 30/255, .8)
+        shake_login1 = Animation(pos_hint=poz1, duration=0.05)
+        shake_login2 = Animation(pos_hint=poz2, duration=0.05)
+        shake_login3 = Animation(pos_hint=poz1, duration=0.05)
+        shake_login4 = Animation(pos_hint=poz2, duration=0.05)
+        shake_login5 = Animation(pos_hint=poz3, duration=0.05)
+
+        shake_login1.bind(on_complete=lambda *args: shake_login2.start(target))
+        shake_login2.bind(on_complete=lambda *args: shake_login3.start(target))
+        shake_login3.bind(on_complete=lambda *args: shake_login4.start(target))
+        shake_login4.bind(on_complete=lambda *args: shake_login5.start(target))
+        shake_login5.bind(on_complete=lambda *args: self.hint_txt_grey(target))
+        shake_login1.start(target)
+
+
+    def hint_txt_grey(self, target):
+        target.color = "grey"
+
+    def return_poz1(self):
+        return {"center_x": 0.36}
+    def return_poz2(self):
+        return {"center_x": 0.32}
+    def return_poz3(self):
+        return {"center_x": 0.34}
+
+    def double_shaking(self):
+        self.text_input1.text = ""
+        self.text_input2.text = ""
+        self.empty_strings(True)
+        self.empty_strings(False)
+        self.hint_txt.text = self.lang_hinttxt
+        self.hint2_txt.text = self.lang_hinttxt2
+
+
+    def loading_starter(self):
+        self.loading_process(not self.blure_active)
+        self.blure_active = not self.blure_active
+
+
+
+class MainScreen(Screen):
     test_button = ObjectProperty()
 
     def __init__(self, **kwargs):
@@ -405,9 +555,10 @@ class LoadingScreen(Screen):
 
 class MTUCIApp(App):
     def build(self):
+        Window.set_icon('loading_logo.png')
         screen_manager = ScreenManager()
         screen_manager.add_widget(LoginWindow(name='login_sc'))
-        screen_manager.add_widget(LoadingScreen(name='load_sc'))
+        screen_manager.add_widget(MainScreen(name='main_sc'))
 
         return screen_manager
 
