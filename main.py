@@ -1,3 +1,6 @@
+import threading
+import time
+
 from kivy.app import App
 from kivy.animation import Animation
 from kivy.properties import ObjectProperty
@@ -6,7 +9,6 @@ from kivy.uix.screenmanager import SlideTransition
 from kivy.clock import Clock
 from kivy.lang import Builder
 from kivy.core.window import Window
-
 
 Builder.load_string("""
 
@@ -19,7 +21,7 @@ Builder.load_string("""
     open_eye: open_eye
     closed_eye: closed_eye
     eye_button: eye_bttn
-    login_label: lab1
+    authorisation_label: lab1
     organization_logo: logo
     checkbox_img1: chck1_img
     checkbox_button: chkbx_but
@@ -62,7 +64,7 @@ Builder.load_string("""
                 root.button_blure()
             on_release:
                 self.bg_color =  [0.2, 0, 0.7, 0.8]
-                root.switch_to_load_screen()
+                root.switch_to_main_screen()
         
         Label:
             id: hint_txt
@@ -264,7 +266,7 @@ Builder.load_string("""
     border_color: [0.2, 0, 0.7, 0.8]
 
 
-<LoadingScreen>:
+<MainScreen>:
 
     test_button:but2
     
@@ -278,7 +280,8 @@ Builder.load_string("""
         
         Button:
             id:but2
-            size_hint: 0.5, 0.5
+            size_hint: 0.4, 0.2
+            pos_hint: {"center_x":0.5, "center_y":0.2}
             on_release: root.switch_to_login_screen()
         
 """)
@@ -289,7 +292,7 @@ class LoginWindow(Screen):
     text_input1 = ObjectProperty()
     text_input2 = ObjectProperty()
     login_button = ObjectProperty()
-    login_label = ObjectProperty()
+    authorisation_label = ObjectProperty()
     login_border = ObjectProperty()
     organization_logo = ObjectProperty()
     checkbox_img1: ObjectProperty()
@@ -311,6 +314,7 @@ class LoginWindow(Screen):
         super().__init__(**kwargs)
         self.blure_active = False
         self.scheduled_event = None
+        self.user_exists = False
 
         self.lang_authorization = 'Авторизация'
         self.lang_rememberme = 'Запомнить меня'
@@ -318,6 +322,8 @@ class LoginWindow(Screen):
         self.lang_hinttxt2 = 'Пароль'
         self.lang_loginbutton = 'Войти'
         self.language()
+
+        self.user_checking_thread = threading.Thread(target=self.user_checking)
 
     def language(self):           # ДЕЛАЙ СМЕНУ ЯЗЫКА ОТ КОНФИГА
         if True:
@@ -328,7 +334,7 @@ class LoginWindow(Screen):
             self.lang_loginbutton = 'Войти'
         else:
             self.lang_authorization = 'Authorisation'
-            self.login_label.text = 'Authorisation'
+            self.authorisation_label.text = 'Authorisation'
             self.lang_rememberme = 'Remember me'
             self.rememberme_label.text = 'Remember me'
             self.lang_hinttxt = 'MTUCI mail     ' #5 spaces
@@ -338,26 +344,31 @@ class LoginWindow(Screen):
             self.lang_loginbutton = 'Enter'
             self.login_button.text = 'Enter'
 
-    def switch_to_load_screen(self):
+    def switch_to_main_screen(self):
         if self.skip_login_window:
             pass                                                   #Написать сохранение личных данных
+
+        if self.text_input1.text == "" or self.text_input2.text == "":
+            self.empty_strings(self.text_input1.text == "")
+            return 0
+
+        self.loading_starter()
+
+        self.user_checking_thread.start()
+
+        #self.manager.transition = SlideTransition(direction="down", duration=0.3)
+        #self.manager.current = 'main_sc'
+
+    def loading_process(self, start):
+        blure_anim = Animation(opacity=1 if not self.blure_active else 0, duration=0.1)
+        blure_anim.start(self.blure)
 
         self.text_input1.disabled = not self.text_input1.disabled
         self.text_input2.disabled = not self.text_input2.disabled
         self.eye_button.disabled = not self.eye_button.disabled
         self.checkbox_button.disabled = not self.checkbox_button.disabled
+        self.login_button.disabled = not self.login_button.disabled
 
-        blure_anim = Animation(opacity = 1 if not self.blure_active else 0, duration=0.1)
-        blure_anim.start(self.blure)
-
-        self.loading_process(not self.blure_active)
-
-        self.blure_active = not self.blure_active
-
-        #self.manager.transition = SlideTransition(direction="down", duration=0.3)
-        #self.manager.current = 'load_sc'
-
-    def loading_process(self, start):
         pulsing_down = Animation(opacity = 0.3, size_hint=(.3, 0.3), duration=0.4)
         pulsing_up = Animation(opacity=1, size_hint=(0.35, 0.35), duration=0.3)
 
@@ -376,6 +387,19 @@ class LoginWindow(Screen):
                 self.scheduled_event = None
                 self.loading_logo.pos_hint = {"center_x":-0.5, "center_y":-0.5}
 
+    def user_checking(self):
+        time.sleep(2)  # ПРОВЕРКА НА self.user_exists
+        self.user_exists = False
+        if self.user_exists:
+            pass
+        else:
+            self.loading_starter()
+            self.user_checking_thread = threading.Thread(target=self.user_checking)
+            Clock.schedule_once(self.on_user_checking_complete)
+
+    def on_user_checking_complete(self, dt):
+        if not self.user_exists:
+            self.double_shaking()
 
     def on_resize(self, *args):
         self.blure_rect.size = (Window.size[0], Window.size[1])
@@ -434,8 +458,59 @@ class LoginWindow(Screen):
             self.closed_eye.opacity = 0
             self.text_input2.password = False
 
+    def empty_strings(self, first_is_empty):
+        if first_is_empty:
+            target = self.hint_txt
+            poz1 = self.return_poz1()
+            poz2 = self.return_poz2()
+            poz3 = self.return_poz3()
+        else:
+            target = self.hint2_txt
+            poz1 = {"center_x": 0.29}
+            poz2 = {"center_x": 0.25}
+            poz3 = {"center_x": 0.27}
 
-class LoadingScreen(Screen):
+        target.color = "red"
+        shake_login1 = Animation(pos_hint=poz1, duration=0.05)
+        shake_login2 = Animation(pos_hint=poz2, duration=0.05)
+        shake_login3 = Animation(pos_hint=poz1, duration=0.05)
+        shake_login4 = Animation(pos_hint=poz2, duration=0.05)
+        shake_login5 = Animation(pos_hint=poz3, duration=0.05)
+
+        shake_login1.bind(on_complete=lambda *args: shake_login2.start(target))
+        shake_login2.bind(on_complete=lambda *args: shake_login3.start(target))
+        shake_login3.bind(on_complete=lambda *args: shake_login4.start(target))
+        shake_login4.bind(on_complete=lambda *args: shake_login5.start(target))
+        shake_login5.bind(on_complete=lambda *args: self.hint_txt_grey(target))
+        shake_login1.start(target)
+
+
+    def hint_txt_grey(self, target):
+        target.color = "grey"
+
+    def return_poz1(self):
+        return {"center_x": 0.36}
+    def return_poz2(self):
+        return {"center_x": 0.32}
+    def return_poz3(self):
+        return {"center_x": 0.34}
+
+    def double_shaking(self):
+        self.text_input1.text = ""
+        self.text_input2.text = ""
+        self.empty_strings(True)
+        self.empty_strings(False)
+        self.hint_txt.text = self.lang_hinttxt
+        self.hint2_txt.text = self.lang_hinttxt2
+
+
+    def loading_starter(self):
+        self.loading_process(not self.blure_active)
+        self.blure_active = not self.blure_active
+
+
+
+class MainScreen(Screen):
     test_button = ObjectProperty()
 
     def __init__(self, **kwargs):
@@ -451,7 +526,7 @@ class MTUCIApp(App):
         Window.set_icon('loading_logo.png')
         screen_manager = ScreenManager()
         screen_manager.add_widget(LoginWindow(name='login_sc'))
-        screen_manager.add_widget(LoadingScreen(name='load_sc'))
+        screen_manager.add_widget(MainScreen(name='main_sc'))
 
         return screen_manager
 
