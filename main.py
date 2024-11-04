@@ -1,4 +1,3 @@
-import os
 import threading
 import time
 import json
@@ -13,7 +12,6 @@ from kivy.uix.screenmanager import SlideTransition
 from kivy.clock import Clock
 from kivy.lang import Builder
 from kivy.core.window import Window
-from numpy.ma.core import empty
 
 Builder.load_string("""
 
