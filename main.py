@@ -1,5 +1,8 @@
 import threading
 import time
+import json
+from cryptography.fernet import Fernet
+import base64
 
 from kivy.app import App
 from kivy.animation import Animation
@@ -269,6 +272,7 @@ Builder.load_string("""
 <MainScreen>:
 
     test_button:but2
+    logout_button:log_out
     
     FloatLayout:
         canvas.before:
@@ -288,12 +292,19 @@ Builder.load_string("""
         
         Button:
             id:but2
+            text: "GO_BACK"
             size_hint: 0.4, 0.2
             pos_hint: {"center_x":0.5, "center_y":0.2}
             on_release: root.switch_to_login_screen()
         
+        Button:
+            id:log_out
+            text: "LOG_OUT"
+            size_hint: 0.4, 0.4
+            pos_hint:{"center_x": 0.8, "center_y": 0.8}
+            on_release: root.to_logout()
+        
 """)
-
 
 class LoginWindow(Screen):
 
@@ -316,8 +327,6 @@ class LoginWindow(Screen):
     blure = ObjectProperty()
 
 
-    skip_login_window = False
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.blure_active = False
@@ -335,8 +344,21 @@ class LoginWindow(Screen):
         self.user_checking_thread = threading.Thread(target=self.user_checking)
         self.data_downloading_thread = threading.Thread(target=self.data_downloading)
 
-    def language(self):           # ДЕЛАЙ СМЕНУ ЯЗЫКА ОТ КОНФИГА
-        if True:
+        self.users_json = None
+        self.config_json = None
+        self.skip_login_window = False   # это настоящее значение чекбокса(не из конфига)
+
+        self.key = None
+        self.keyy = None
+
+        self.error_current_retry = 0
+        self.error_rememberme_retry = 0
+
+    def language(self):
+        with open('config.json', "r") as file1:
+            self.config_json = json.load(file1)
+
+        if self.config_json['language']!='EN':
             self.lang_authorization = 'Авторизация'
             self.lang_rememberme = 'Запомнить меня'
             self.lang_hinttxt = 'почта МТУСИ'
@@ -381,7 +403,7 @@ class LoginWindow(Screen):
         self.checkbox_button.disabled = not self.checkbox_button.disabled
         self.login_button.disabled = not self.login_button.disabled
 
-        pulsing_down = Animation(opacity = 0.3, size_hint=(.3, 0.3), duration=0.4)
+        pulsing_down = Animation(opacity = 0.3, size_hint=(.3, .3), duration=0.4)
         pulsing_up = Animation(opacity=1, size_hint=(0.35, 0.35), duration=0.3)
 
         def cycle(dt):
@@ -401,9 +423,80 @@ class LoginWindow(Screen):
 
 
     def user_checking(self):
-        time.sleep(1)  # ПРОВЕРКА НА self.user_exists
-        self.user_exists = True
+        with open('USERS.json', "r") as file:  #ЗАПРОС НА НАЛИЧИЕ ЮЗЕРА В БД
+            self.users_json = json.load(file)
+
+        for i in self.users_json['users']:  #ЗАПРОС НА НАЛИЧИЕ ЮЗЕРА В БД
+            if i['login']==self.text_input1.text and i['password']==self.text_input2.text:
+                self.user_exists = True
+
         if self.user_exists:
+            self.write_user(self.text_input1.text)
+            with open('config.json', "r") as file1:
+                self.config_json = json.load(file1)
+
+            to_crypt_remembered = Crypter(self.text_input1.text, self.text_input2.text, 'remembered.txt', 'fontt.tff', user_id="user_id")
+            to_crypt_current = Crypter(self.text_input1.text, self.text_input2.text, 'current_session.txt', 'font_high.tff', user_id="user_id2")
+
+            try:
+                self.write_rememberme(self.text_input1.text, to_crypt_current.password_enc(), "current_session.txt")
+                to_crypt_current.file_enc()
+            except Exception as e:
+                if self.error_current_retry<1:
+                    print(f"Ошибка записи current сессии: <{e}>")
+                    self.to_reboot()
+                    self.error_current_retry+=1
+                    return self.user_checking()
+                else:
+                    print(f"КРИТИЧЕСКАЯ ОШИБКА current <{e}>")
+                    App.get_running_app().stop()
+
+
+
+            if self.skip_login_window:
+                if not self.config_json['first_launch']:
+                    try:
+                        to_crypt_remembered.file_decr()
+                    except:
+                        pass
+                    try:
+                        self.write_rememberme(self.text_input1.text, to_crypt_remembered.password_enc(),
+                                              "remembered.txt")
+                        to_crypt_remembered.file_enc()
+                    except Exception as e:
+                        if self.error_rememberme_retry < 2:
+                            print(f"Ошибка записи rememberme: <{e}>")
+                            self.to_reboot()
+                            self.error_rememberme_retry += 1
+                            return self.user_checking()
+                        else:
+                            print(f"КРИТИЧЕСКАЯ ОШИБКА rememberme <{e}>")
+                            App.get_running_app().stop()
+
+                else:
+                    try:
+                        self.write_rememberme(self.text_input1.text, to_crypt_remembered.password_enc(), "remembered.txt")
+                        to_crypt_remembered.file_enc()
+                    except Exception as e:
+                        if self.error_rememberme_retry < 2:
+                            print(f"Ошибка записи rememberme: <{e}>")
+                            self.to_reboot()
+                            self.error_rememberme_retry += 1
+                            return self.user_checking()
+                        else:
+                            print(f"КРИТИЧЕСКАЯ ОШИБКА rememberme <{e}>")
+                            App.get_running_app().stop()
+
+                self.config_json["checkbox_active"] = True
+                self.config_json['first_launch'] = False
+                with open("config.json", "w") as file2:
+                    json.dump(self.config_json, file2)
+            else:
+                self.config_json['first_launch'] = False
+
+                with open("config.json", "w") as file2:
+                    json.dump(self.config_json, file2)
+
             Clock.schedule_once(self.start_downloading_thread)
         else:
             self.loading_starter()
@@ -540,6 +633,61 @@ class LoginWindow(Screen):
         self.loading_process(not self.blure_active)
         self.blure_active = not self.blure_active
 
+    def entry(self):
+        self.text_input1.text = ""
+        self.text_input2.text = ""
+        self.hint_txt.text = self.lang_hinttxt
+        self.hint2_txt.text = self.lang_hinttxt2
+
+    def write_user(self, login):
+        with open("users.txt", "r") as file4:
+            already_exists = False
+            userlist=[]
+            for i in file4.readlines():
+                if i!=0:
+                    userlist.append(i)
+                if i == login+"\n" or i == login:
+                    already_exists = True
+                    break
+        if not already_exists:
+            to_write = ""
+            with open("users.txt", "w") as file:
+                for i in range(len(userlist)):
+                    to_write += f"{userlist[i]}"
+                file.write(f"{to_write}\n{login}")
+
+    def write_rememberme(self, login, password, where_to_write):
+        password = base64.urlsafe_b64encode(password).decode('utf-8')
+        with open(where_to_write, "w") as file5:
+            file5.write(f"{login}\n{password}")
+
+    def to_reboot(self):
+        with open('remembered.txt', "r") as rem:
+            is_empty = (rem.read()=="")
+        if not is_empty:
+            to_crypt3_remembered = Crypter(file='remembered.txt', where='fontt.tff', user_id="user_id")
+            try:
+                to_crypt3_remembered.file_decr()
+            except Exception as e:
+                print(f"Ошибка декрипта файла при сбросе данных rememberme: <{e}>")
+            with open('remembered.txt', "w") as rem2:
+                rem2.write("")
+        to_crypt3_current = Crypter(file='current_session.txt', where='font_high.tff', user_id="user_id2")
+        try:
+            to_crypt3_current.file_decr()
+        except Exception as e:
+            print(f"Ошибка декрипта файла при сбросе данных exception: <{e}>")
+        with open('current_session.txt', "w") as cur:
+            cur.write("")
+
+        with open("config.json", "r") as f:
+            self.config_json = json.load(f)
+
+        self.config_json['checkbox_active'] = False
+
+        with open("config.json", "w") as ff:
+            json.dump(self.config_json, ff)
+
 
 
 class MainScreen(Screen):
@@ -547,10 +695,124 @@ class MainScreen(Screen):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.config_json = None
 
-    def switch_to_login_screen(self):
+    def switch_to_login_screen(self):  #НИЖЕ ГДЕ КРИПТЫ ЭТО ВСЁ ТЕСТЫ. ЭТО ПРИМЕРНОЕ ВЗ-Е С КРИПТАНУТЫМ.
+        """to_crypt2_remembered = Crypter(file='remembered.txt', where='fontt.tff', user_id="user_id")
+        to_crypt2_current = Crypter(file='current_session.txt', where='font_high.tff', user_id="user_id2")
+
+
+        try:
+            to_crypt2_remembered.file_decr()
+            print(f"REMEMBERED Логин: {to_crypt2_remembered.login}. Пароль: {to_crypt2_remembered.password_decr()}")
+            to_crypt2_remembered.file_enc()
+        except:
+            pass
+
+        to_crypt2_current.file_decr()
+        print(f"CURRENT Логин: {to_crypt2_current.login}. Пароль: {to_crypt2_current.password_decr()}")
+        to_crypt2_current.file_enc()"""
+
+        firstwindow = self.manager.get_screen('login_sc')
+        firstwindow.entry()
         self.manager.transition = SlideTransition(direction="up", duration=0.3)
         self.manager.current = 'login_sc'
+
+    def to_logout(self):
+        with open('remembered.txt', "r") as rem:
+            is_empty = (rem.read()=="")
+        if not is_empty:
+            to_crypt2_remembered = Crypter(file='remembered.txt', where='fontt.tff', user_id="user_id")
+            to_crypt2_remembered.file_decr()
+            with open('remembered.txt', "w") as rem2:
+                rem2.write("")
+        to_crypt2_current = Crypter(file='current_session.txt', where='font_high.tff', user_id="user_id2")
+        to_crypt2_current.file_decr()
+        with open('current_session.txt', "w") as cur:
+            cur.write("")
+
+        with open("config.json", "r") as f:
+            self.config_json = json.load(f)
+
+        self.config_json['checkbox_active'] = False
+
+        with open("config.json", "w") as ff:
+            json.dump(self.config_json, ff)
+
+        firstwindow = self.manager.get_screen('login_sc')
+        firstwindow.entry()
+        self.manager.transition = SlideTransition(direction="up", duration=0.3)
+        self.manager.current = 'login_sc'
+
+
+
+class Crypter:
+    def __init__(self, login = None, password = None, file = None, where = None, user_id = None):
+        self.key = None
+        self.keyy = None
+        self.file = file
+        self.where = where
+        self.login = login
+        self.password = password
+        self.config_json = None
+        self.user_id = user_id
+
+    def password_enc(self): #пароль
+        self.key = Fernet.generate_key()
+        f = Fernet(self.key)
+
+        password = f.encrypt(self.password.encode('utf-8'))
+
+        self.key = base64.urlsafe_b64encode(self.key).decode('utf-8')
+        with open('user_id.json', "r") as file6:
+            self.config_json = json.load(file6)
+        self.config_json[self.user_id] = self.key
+        with open("user_id.json", "w") as file321:
+            json.dump(self.config_json, file321)
+
+        return password
+
+    def password_decr(self):
+        with open(self.file, "r") as file7:
+            file = file7.readlines()[1].strip()
+        with open('user_id.json', "r") as file8:
+            self.config_json = json.load(file8)
+            user_id = self.config_json[self.user_id]
+        user_id = base64.urlsafe_b64decode(user_id)
+        file = base64.urlsafe_b64decode(file.encode('utf-8'))
+
+        f = Fernet(user_id)
+        new = f.decrypt(file)
+        return new.decode('utf-8')
+
+    def file_enc(self):
+        self.keyy = Fernet.generate_key()
+
+        with open(self.where, "wb") as file8:
+            file8.write(self.keyy)
+
+        f = Fernet(self.keyy)
+        with open(self.file, "rb") as data:
+            data = data.read()
+        new_file = f.encrypt(data)
+        with open(self.file, "wb") as file9:
+            file9.write(new_file)
+
+    def file_decr(self):
+        with open(self.where, "rb") as file10:
+            test = file10.read()
+        f = Fernet(test)
+
+        with open(self.file, "rb") as file11:
+            new11 = file11.read()
+        new11 = f.decrypt(new11)
+
+        with open(self.file, "wb") as file12:
+            file12.write(new11)
+
+        with open(self.file, "rb") as file13:
+            self.login = file13.readline().strip().decode('utf-8')
+
 
 
 class MTUCIApp(App):
@@ -560,7 +822,20 @@ class MTUCIApp(App):
         screen_manager.add_widget(LoginWindow(name='login_sc'))
         screen_manager.add_widget(MainScreen(name='main_sc'))
 
+        with open("config.json", "r") as q:
+            config_json = json.load(q)
+        if config_json['checkbox_active']:
+            screen_manager.get_screen('login_sc').opacity = 0
+            screen_manager.transition = SlideTransition(direction="up", duration=0.000000000001)
+            screen_manager.current = 'main_sc'
+            Clock.schedule_once(lambda dt: self.fix_opacity(screen_manager), 1)
+
+
         return screen_manager
+
+    def fix_opacity(self, screen_manager):
+        screen_manager.get_screen('login_sc').opacity = 1
+
 
 if __name__ == "__main__":
     MTUCIApp().run()
