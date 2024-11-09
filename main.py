@@ -662,6 +662,7 @@ class LoginWindow(Screen):
             file5.write(f"{login}\n{password}")
 
     def to_reboot(self):
+        self.delete_user_exists()
         with open('remembered.txt', "r") as rem:
             is_empty = (rem.read()=="")
         if not is_empty:
@@ -688,6 +689,9 @@ class LoginWindow(Screen):
         with open("config.json", "w") as ff:
             json.dump(self.config_json, ff)
 
+    def delete_user_exists(self):
+        self.user_exists = False
+
 
 
 class MainScreen(Screen):
@@ -697,28 +701,15 @@ class MainScreen(Screen):
         super().__init__(**kwargs)
         self.config_json = None
 
-    def switch_to_login_screen(self):  #НИЖЕ ГДЕ КРИПТЫ ЭТО ВСЁ ТЕСТЫ. ЭТО ПРИМЕРНОЕ ВЗ-Е С КРИПТАНУТЫМ.
-        """to_crypt2_remembered = Crypter(file='remembered.txt', where='fontt.tff', user_id="user_id")
-        to_crypt2_current = Crypter(file='current_session.txt', where='font_high.tff', user_id="user_id2")
-
-
-        try:
-            to_crypt2_remembered.file_decr()
-            print(f"REMEMBERED Логин: {to_crypt2_remembered.login}. Пароль: {to_crypt2_remembered.password_decr()}")
-            to_crypt2_remembered.file_enc()
-        except:
-            pass
-
-        to_crypt2_current.file_decr()
-        print(f"CURRENT Логин: {to_crypt2_current.login}. Пароль: {to_crypt2_current.password_decr()}")
-        to_crypt2_current.file_enc()"""
-
+    def switch_to_login_screen(self):
         firstwindow = self.manager.get_screen('login_sc')
         firstwindow.entry()
         self.manager.transition = SlideTransition(direction="up", duration=0.3)
         self.manager.current = 'login_sc'
 
     def to_logout(self):
+        firstwindow = self.manager.get_screen('login_sc')
+        firstwindow.delete_user_exists()
         with open('remembered.txt', "r") as rem:
             is_empty = (rem.read()=="")
         if not is_empty:
