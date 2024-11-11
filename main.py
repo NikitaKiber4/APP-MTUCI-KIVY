@@ -351,6 +351,18 @@ class LoginWindow(Screen):
         self.key = None
         self.keyy = None
 
+        self.error_current_retry = 0
+        self.error_rememberme_retry = 0
+
+        self.delete_predicted_login = False
+
+    def on_enter(self, *args):
+        with open('users.txt', 'r') as filea:
+            f = filea.read().split('\n')
+        if len(f)!=0:
+            self.text_input1.text = f[0]
+            self.hint_txt.text = ""
+            self.delete_predicted_login = True
     def language(self):
         with open('config.json', "r") as file1:
             self.config_json = json.load(file1)
@@ -423,7 +435,7 @@ class LoginWindow(Screen):
         with open('USERS.json', "r") as file:  #ЗАПРОС НА НАЛИЧИЕ ЮЗЕРА В БД
             self.users_json = json.load(file)
 
-        for i in self.users_json['users']:
+        for i in self.users_json['users']:  #ЗАПРОС НА НАЛИЧИЕ ЮЗЕРА В БД
             if i['login']==self.text_input1.text and i['password']==self.text_input2.text:
                 self.user_exists = True
 
@@ -435,8 +447,19 @@ class LoginWindow(Screen):
             to_crypt_remembered = Crypter(self.text_input1.text, self.text_input2.text, 'remembered.txt', 'fontt.tff', user_id="user_id")
             to_crypt_current = Crypter(self.text_input1.text, self.text_input2.text, 'current_session.txt', 'font_high.tff', user_id="user_id2")
 
-            self.write_rememberme(self.text_input1.text, to_crypt_current.password_enc(), "current_session.txt")
-            to_crypt_current.file_enc()
+            try:
+                self.write_rememberme(self.text_input1.text, to_crypt_current.password_enc(), "current_session.txt")
+                to_crypt_current.file_enc()
+            except Exception as e:
+                if self.error_current_retry<1:
+                    print(f"Ошибка записи current сессии: <{e}>")
+                    self.to_reboot()
+                    self.error_current_retry+=1
+                    return self.user_checking()
+                else:
+                    print(f"КРИТИЧЕСКАЯ ОШИБКА current <{e}>")
+                    App.get_running_app().stop()
+
 
 
             if self.skip_login_window:
@@ -445,13 +468,33 @@ class LoginWindow(Screen):
                         to_crypt_remembered.file_decr()
                     except:
                         pass
-                    self.write_rememberme(self.text_input1.text, to_crypt_remembered.password_enc(),
-                                          "remembered.txt")
-                    to_crypt_remembered.file_enc()
+                    try:
+                        self.write_rememberme(self.text_input1.text, to_crypt_remembered.password_enc(),
+                                              "remembered.txt")
+                        to_crypt_remembered.file_enc()
+                    except Exception as e:
+                        if self.error_rememberme_retry < 2:
+                            print(f"Ошибка записи rememberme: <{e}>")
+                            self.to_reboot()
+                            self.error_rememberme_retry += 1
+                            return self.user_checking()
+                        else:
+                            print(f"КРИТИЧЕСКАЯ ОШИБКА rememberme <{e}>")
+                            App.get_running_app().stop()
 
                 else:
-                    self.write_rememberme(self.text_input1.text, to_crypt_remembered.password_enc(), "remembered.txt")
-                    to_crypt_remembered.file_enc()
+                    try:
+                        self.write_rememberme(self.text_input1.text, to_crypt_remembered.password_enc(), "remembered.txt")
+                        to_crypt_remembered.file_enc()
+                    except Exception as e:
+                        if self.error_rememberme_retry < 2:
+                            print(f"Ошибка записи rememberme: <{e}>")
+                            self.to_reboot()
+                            self.error_rememberme_retry += 1
+                            return self.user_checking()
+                        else:
+                            print(f"КРИТИЧЕСКАЯ ОШИБКА rememberme <{e}>")
+                            App.get_running_app().stop()
 
                 self.config_json["checkbox_active"] = True
                 self.config_json['first_launch'] = False
@@ -525,6 +568,9 @@ class LoginWindow(Screen):
                 self.hint_txt.text = ""
             elif value == 0 and instance.text=="":
                 self.hint_txt.text = self.lang_hinttxt
+            if value == 1 and self.delete_predicted_login:
+                self.text_input1.text = ""
+                self.delete_predicted_login = False
         elif instance == self.text_input2:
             if value == 1 and instance.text=="":
                 self.hint2_txt.text = ""
@@ -614,18 +660,58 @@ class LoginWindow(Screen):
                     userlist.append(i)
                 if i == login+"\n" or i == login:
                     already_exists = True
-                    break
+        if already_exists:
+            try:
+                userlist.remove(login)
+            except:
+                userlist.remove(login+"\n")
+            with open("users.txt", "w") as file99:
+                to_write = str(login)+"\n"
+                for i in range(len(userlist)):
+                    to_write += f"{userlist[i]}"
+                file99.write(f"{to_write}")
         if not already_exists:
             to_write = ""
             with open("users.txt", "w") as file:
                 for i in range(len(userlist)):
                     to_write += f"{userlist[i]}"
-                file.write(f"{to_write}\n{login}")
+                file.write(f"{login}\n{to_write}")
 
     def write_rememberme(self, login, password, where_to_write):
         password = base64.urlsafe_b64encode(password).decode('utf-8')
         with open(where_to_write, "w") as file5:
             file5.write(f"{login}\n{password}")
+
+    def to_reboot(self):
+        self.delete_user_exists()
+        with open('remembered.txt', "r") as rem:
+            is_empty = (rem.read()=="")
+        if not is_empty:
+            to_crypt3_remembered = Crypter(file='remembered.txt', where='fontt.tff', user_id="user_id")
+            try:
+                to_crypt3_remembered.file_decr()
+            except Exception as e:
+                print(f"Ошибка декрипта файла при сбросе данных rememberme: <{e}>")
+            with open('remembered.txt', "w") as rem2:
+                rem2.write("")
+        to_crypt3_current = Crypter(file='current_session.txt', where='font_high.tff', user_id="user_id2")
+        try:
+            to_crypt3_current.file_decr()
+        except Exception as e:
+            print(f"Ошибка декрипта файла при сбросе данных exception: <{e}>")
+        with open('current_session.txt', "w") as cur:
+            cur.write("")
+
+        with open("config.json", "r") as f:
+            self.config_json = json.load(f)
+
+        self.config_json['checkbox_active'] = False
+
+        with open("config.json", "w") as ff:
+            json.dump(self.config_json, ff)
+
+    def delete_user_exists(self):
+        self.user_exists = False
 
 
 
@@ -636,28 +722,15 @@ class MainScreen(Screen):
         super().__init__(**kwargs)
         self.config_json = None
 
-    def switch_to_login_screen(self):  #НИЖЕ ГДЕ КРИПТЫ ЭТО ВСЁ ТЕСТЫ. ЭТО ПРИМЕРНОЕ ВЗ-Е С КРИПТАНУТЫМ.
-        """to_crypt2_remembered = Crypter(file='remembered.txt', where='fontt.tff', user_id="user_id")
-        to_crypt2_current = Crypter(file='current_session.txt', where='font_high.tff', user_id="user_id2")
-
-
-        try:
-            to_crypt2_remembered.file_decr()
-            print(f"REMEMBERED Логин: {to_crypt2_remembered.login}. Пароль: {to_crypt2_remembered.password_decr()}")
-            to_crypt2_remembered.file_enc()
-        except:
-            pass
-
-        to_crypt2_current.file_decr()
-        print(f"CURRENT Логин: {to_crypt2_current.login}. Пароль: {to_crypt2_current.password_decr()}")
-        to_crypt2_current.file_enc()"""
-
+    def switch_to_login_screen(self):
         firstwindow = self.manager.get_screen('login_sc')
         firstwindow.entry()
         self.manager.transition = SlideTransition(direction="up", duration=0.3)
         self.manager.current = 'login_sc'
 
     def to_logout(self):
+        firstwindow = self.manager.get_screen('login_sc')
+        firstwindow.delete_user_exists()
         with open('remembered.txt', "r") as rem:
             is_empty = (rem.read()=="")
         if not is_empty:
@@ -764,10 +837,17 @@ class MTUCIApp(App):
         with open("config.json", "r") as q:
             config_json = json.load(q)
         if config_json['checkbox_active']:
-            screen_manager.transition = SlideTransition(direction="up", duration=0.001)
+            screen_manager.get_screen('login_sc').opacity = 0
+            screen_manager.transition = SlideTransition(direction="up", duration=0.000000000001)
             screen_manager.current = 'main_sc'
+            Clock.schedule_once(lambda dt: self.fix_opacity(screen_manager), 1)
+
 
         return screen_manager
+
+    def fix_opacity(self, screen_manager):
+        screen_manager.get_screen('login_sc').opacity = 1
+
 
 if __name__ == "__main__":
     MTUCIApp().run()
