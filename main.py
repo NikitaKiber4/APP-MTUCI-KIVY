@@ -271,8 +271,14 @@ Builder.load_string("""
 
 <MainScreen>:
 
-    test_button:but2
     logout_button:log_out
+    main_screen_manager: main_sc_manager
+    switch_to_homework_but: switch_to_homeworksc_but
+    switch_to_schedule_but: switch_to_schedulesc_but
+    switch_to_news_but: switch_to_news_but
+    switch_to_attendance_but: switch_to_attendance_but
+    switch_to_otherfuncs_but: switch_to_otherfuncs_but
+    
     
     FloatLayout:
         canvas.before:
@@ -282,27 +288,168 @@ Builder.load_string("""
                 size: self.size
                 pos: self.pos
         
-        Label:
-            text: "Главное окно"
-            font_size: 40
-            font_name: "font.ttf"
-            color: (.2, .2, .7, 1)
-            pos_hint: {"center_x":0.5, "center_y":0.7}
-            size_hint: 0.4, 0.09
+            Color:
+                rgba: 235/255, 235/255, 235/255, 1
+            Rectangle:
+                size: self.width, self.height/10
         
-        Button:
-            id:but2
-            text: "GO_BACK"
-            size_hint: 0.4, 0.2
-            pos_hint: {"center_x":0.5, "center_y":0.2}
-            on_release: root.switch_to_login_screen()
+        MainScreenManager:
+            id:main_sc_manager
         
         Button:
             id:log_out
             text: "LOG_OUT"
-            size_hint: 0.4, 0.4
-            pos_hint:{"center_x": 0.8, "center_y": 0.8}
+            size_hint: 0.14, 0.07
+            pos_hint:{"center_x": 0.9, "center_y": 0.95}
             on_release: root.to_logout()
+        
+        Button:
+            id:switch_to_news_but
+            text: "to_news"
+            size_hint: 0.14, 0.07
+            pos_hint:{"center_x": 0.14, "center_y": 0.05}
+            on_release: root.switch_to_news()
+        
+        Button:
+            id:switch_to_homeworksc_but
+            text: "to_hw"
+            size_hint: 0.14, 0.07
+            pos_hint:{"center_x": 0.32, "center_y": 0.05}
+            on_release: root.switch_to_homework()
+        
+        Button:
+            id:switch_to_schedulesc_but
+            text: "to_sch"
+            size_hint: 0.14, 0.07
+            pos_hint:{"center_x": 0.5, "center_y": 0.05}
+            on_release: root.switch_to_schedule()
+        
+        Button:
+            id:switch_to_attendance_but
+            text: "to_attend"
+            size_hint: 0.14, 0.07
+            pos_hint:{"center_x": 0.68, "center_y": 0.05}
+            on_release: root.switch_to_attendance()
+        
+        Button:
+            id:switch_to_otherfuncs_but
+            text: "to_otherfuncs"
+            size_hint: 0.14, 0.07
+            pos_hint:{"center_x": 0.86, "center_y": 0.05}
+            on_release: root.switch_to_otherfuncs()
+
+
+<MainScreenManager@ScreenManager>:
+    ScheduleWindow:
+    HomeworkWindow:
+    NewsWindow:
+    AttendanceWindow:
+    OtherFunctions:
+
+<NewsWindow@Screen>:
+    name: "news"
+    canvas.before:
+        Color:
+            rgba: 250/255, 250/255, 200/255, 0.95
+        Rectangle:
+            size: self.size
+            pos: self.pos
+        Color:
+            rgba: 235/255, 235/255, 235/255, 1
+        Rectangle:
+            size: self.width, self.height/10
+    
+    BoxLayout:
+        orientation: "vertical"
+        
+        Label:
+            text: 'News'
+            font_size: 50
+            color: 'black'
+
+<ScheduleWindow@Screen>:
+    name: "schedule"
+    canvas.before:
+        Color:
+            rgba: 200/255, 250/255, 250/255, 0.95
+        Rectangle:
+            size: self.size
+            pos: self.pos
+        Color:
+            rgba: 235/255, 235/255, 235/255, 1
+        Rectangle:
+            size: self.width, self.height/10
+        
+    BoxLayout:
+        orientation: "vertical"
+        
+        Label:
+            text: 'Schedule'
+            font_size: 50
+            color: 'black'
+
+<HomeworkWindow@Screen>:
+    name: "homework"
+    canvas.before:
+        Color:
+            rgba: 240/255, 200/255, 240/255, 0.95
+        Rectangle:
+            size: self.size
+            pos: self.pos
+        Color:
+            rgba: 235/255, 235/255, 235/255, 1
+        Rectangle:
+            size: self.width, self.height/10
+    
+    BoxLayout:
+        orientation: "vertical"
+        
+        Label:
+            text: 'Homework'
+            font_size: 50
+            color: 'black'
+
+<AttendanceWindow@Screen>:
+    name: "attendance"
+    canvas.before:
+        Color:
+            rgba: 200/255, 200/255, 250/255, 0.95
+        Rectangle:
+            size: self.size
+            pos: self.pos
+        Color:
+            rgba: 235/255, 235/255, 235/255, 1
+        Rectangle:
+            size: self.width, self.height/10
+    
+    BoxLayout:
+        orientation: "vertical"
+        
+        Label:
+            text: 'attendance'
+            font_size: 50
+            color: 'black'
+
+<OtherFunctions@Screen>:
+    name: "otherfuncs"
+    canvas.before:
+        Color:
+            rgba: 150/255, 150/255, 150/255, 0.95
+        Rectangle:
+            size: self.size
+            pos: self.pos
+        Color:
+            rgba: 235/255, 235/255, 235/255, 1
+        Rectangle:
+            size: self.width, self.height/10
+    
+    BoxLayout:
+        orientation: "vertical"
+        
+        Label:
+            text: 'other_funcs'
+            font_size: 50
+            color: 'black'
         
 """)
 
@@ -716,17 +863,18 @@ class LoginWindow(Screen):
 
 
 class MainScreen(Screen):
-    test_button = ObjectProperty()
+
+    logout_button = ObjectProperty()
+    main_screen_manager = ObjectProperty()
+    switch_to_homework_but = ObjectProperty()
+    switch_to_schedule_but = ObjectProperty()
+    switch_to_news_but = ObjectProperty()
+    switch_to_attendance_but = ObjectProperty()
+    switch_to_otherfuncs_but = ObjectProperty()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.config_json = None
-
-    def switch_to_login_screen(self):
-        firstwindow = self.manager.get_screen('login_sc')
-        firstwindow.entry()
-        self.manager.transition = SlideTransition(direction="up", duration=0.3)
-        self.manager.current = 'login_sc'
 
     def to_logout(self):
         firstwindow = self.manager.get_screen('login_sc')
@@ -756,6 +904,34 @@ class MainScreen(Screen):
         self.manager.transition = SlideTransition(direction="up", duration=0.3)
         self.manager.current = 'login_sc'
 
+    def switch_to_news(self):
+        self.main_screen_manager.transition = SlideTransition(direction = 'right', duration=0.2)
+        self.main_screen_manager.current = 'news'
+
+    def switch_to_homework(self):
+        if self.main_screen_manager.current == 'news':
+            self.main_screen_manager.transition = SlideTransition(direction = 'left', duration=0.2)
+        else:
+            self.main_screen_manager.transition = SlideTransition(direction='right', duration=0.2)
+        self.main_screen_manager.current = 'homework'
+
+    def switch_to_schedule(self):
+        if self.main_screen_manager.current == 'news' or self.main_screen_manager.current == 'homework':
+            self.main_screen_manager.transition = SlideTransition(direction = 'left', duration=0.2)
+        else:
+            self.main_screen_manager.transition = SlideTransition(direction='right', duration=0.2)
+        self.main_screen_manager.current = 'schedule'
+
+    def switch_to_attendance(self):
+        if self.main_screen_manager.current == 'otherfuncs':
+            self.main_screen_manager.transition = SlideTransition(direction = 'right', duration=0.2)
+        else:
+            self.main_screen_manager.transition = SlideTransition(direction='left', duration=0.2)
+        self.main_screen_manager.current = 'attendance'
+
+    def switch_to_otherfuncs(self):
+        self.main_screen_manager.transition = SlideTransition(direction='left', duration=0.2)
+        self.main_screen_manager.current = 'otherfuncs'
 
 
 class Crypter:
