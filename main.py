@@ -904,33 +904,58 @@ class MainScreen(Screen):
         self.manager.transition = SlideTransition(direction="up", duration=0.3)
         self.manager.current = 'login_sc'
 
+    def un_mute_switchcsreen_buttons(self, to_mute = False):
+        self.switch_to_news_but.disabled = to_mute
+        self.switch_to_homework_but.disabled = to_mute
+        self.switch_to_schedule_but.disabled = to_mute
+        self.switch_to_attendance_but.disabled = to_mute
+        self.switch_to_otherfuncs_but.disabled = to_mute
+
     def switch_to_news(self):
-        self.main_screen_manager.transition = SlideTransition(direction = 'right', duration=0.2)
+        if self.main_screen_manager.current != "news":
+            self.un_mute_switchcsreen_buttons(True)
+        self.main_screen_manager.transition = SlideTransition(direction = 'right', duration=0.15)
+        self.main_screen_manager.transition.bind(on_complete = lambda *args: self.un_mute_switchcsreen_buttons())
         self.main_screen_manager.current = 'news'
 
     def switch_to_homework(self):
+        if self.main_screen_manager.current != "homework":
+            self.un_mute_switchcsreen_buttons(True)
         if self.main_screen_manager.current == 'news':
-            self.main_screen_manager.transition = SlideTransition(direction = 'left', duration=0.2)
+            self.main_screen_manager.transition = SlideTransition(direction = 'left', duration=0.15)
+            self.main_screen_manager.transition.bind(on_complete=lambda *args: self.un_mute_switchcsreen_buttons())
         else:
-            self.main_screen_manager.transition = SlideTransition(direction='right', duration=0.2)
+            self.main_screen_manager.transition = SlideTransition(direction='right', duration=0.15)
+            self.main_screen_manager.transition.bind(on_complete=lambda *args: self.un_mute_switchcsreen_buttons())
         self.main_screen_manager.current = 'homework'
 
     def switch_to_schedule(self):
+        if self.main_screen_manager.current != "schedule":
+            self.un_mute_switchcsreen_buttons(True)
         if self.main_screen_manager.current == 'news' or self.main_screen_manager.current == 'homework':
-            self.main_screen_manager.transition = SlideTransition(direction = 'left', duration=0.2)
+            self.main_screen_manager.transition = SlideTransition(direction = 'left', duration=0.15)
+            self.main_screen_manager.transition.bind(on_complete=lambda *args: self.un_mute_switchcsreen_buttons())
         else:
-            self.main_screen_manager.transition = SlideTransition(direction='right', duration=0.2)
+            self.main_screen_manager.transition = SlideTransition(direction='right', duration=0.15)
+            self.main_screen_manager.transition.bind(on_complete=lambda *args: self.un_mute_switchcsreen_buttons())
         self.main_screen_manager.current = 'schedule'
 
     def switch_to_attendance(self):
+        if self.main_screen_manager.current != "attendance":
+            self.un_mute_switchcsreen_buttons(True)
         if self.main_screen_manager.current == 'otherfuncs':
-            self.main_screen_manager.transition = SlideTransition(direction = 'right', duration=0.2)
+            self.main_screen_manager.transition = SlideTransition(direction = 'right', duration=0.15)
+            self.main_screen_manager.transition.bind(on_complete=lambda *args: self.un_mute_switchcsreen_buttons())
         else:
-            self.main_screen_manager.transition = SlideTransition(direction='left', duration=0.2)
+            self.main_screen_manager.transition = SlideTransition(direction='left', duration=0.15)
+            self.main_screen_manager.transition.bind(on_complete=lambda *args: self.un_mute_switchcsreen_buttons())
         self.main_screen_manager.current = 'attendance'
 
     def switch_to_otherfuncs(self):
-        self.main_screen_manager.transition = SlideTransition(direction='left', duration=0.2)
+        if self.main_screen_manager.current != "otherfuncs":
+            self.un_mute_switchcsreen_buttons(True)
+        self.main_screen_manager.transition = SlideTransition(direction='left', duration=0.15)
+        self.main_screen_manager.transition.bind(on_complete=lambda *args: self.un_mute_switchcsreen_buttons())
         self.main_screen_manager.current = 'otherfuncs'
 
 
