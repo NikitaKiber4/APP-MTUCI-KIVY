@@ -910,7 +910,7 @@ class MainScreen(Screen):
         super().on_touch_down(touch)
 
     def on_touch_move(self, touch):
-        if touch.dx < -70:
+        if touch.dx < -80:
             if self.main_screen_manager.current == 'news' and not self.block_touch_switching:
                 self.block_touch_switching = True
                 self.switch_to_homework()
@@ -923,7 +923,7 @@ class MainScreen(Screen):
             elif self.main_screen_manager.current == 'attendance' and not self.block_touch_switching:
                 self.block_touch_switching = True
                 self.switch_to_otherfuncs()
-        elif touch.dx > 70:
+        elif touch.dx > 80:
             if self.main_screen_manager.current == 'otherfuncs' and not self.block_touch_switching:
                 self.block_touch_switching = True
                 self.switch_to_attendance()
