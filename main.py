@@ -905,8 +905,12 @@ class MainScreen(Screen):
         self.manager.transition = SlideTransition(direction="up", duration=0.3)
         self.manager.current = 'login_sc'
 
+    def on_touch_down(self, touch):
+        self.unblock_touch_switching()
+        super().on_touch_down(touch)
+
     def on_touch_move(self, touch):
-        if touch.dx < -60:
+        if touch.dx < -70:
             if self.main_screen_manager.current == 'news' and not self.block_touch_switching:
                 self.block_touch_switching = True
                 self.switch_to_homework()
@@ -919,7 +923,7 @@ class MainScreen(Screen):
             elif self.main_screen_manager.current == 'attendance' and not self.block_touch_switching:
                 self.block_touch_switching = True
                 self.switch_to_otherfuncs()
-        elif touch.dx > 60:
+        elif touch.dx > 70:
             if self.main_screen_manager.current == 'otherfuncs' and not self.block_touch_switching:
                 self.block_touch_switching = True
                 self.switch_to_attendance()
@@ -941,9 +945,8 @@ class MainScreen(Screen):
         self.switch_to_schedule_but.disabled = to_mute
         self.switch_to_attendance_but.disabled = to_mute
         self.switch_to_otherfuncs_but.disabled = to_mute
-        Clock.schedule_once(self.unblock_touch_switching, 0.5)
 
-    def unblock_touch_switching(self, dt):
+    def unblock_touch_switching(self):
         self.block_touch_switching = False
 
     def switch_to_news(self):
