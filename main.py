@@ -875,7 +875,8 @@ class MainScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.config_json = None
-        self.block_touch_switching = False
+        self.block_touch_switching2 = False
+        self.block_touch_switching1 = False
 
     def to_logout(self):
         firstwindow = self.manager.get_screen('login_sc')
@@ -906,94 +907,100 @@ class MainScreen(Screen):
         self.manager.current = 'login_sc'
 
     def on_touch_down(self, touch):
-        self.unblock_touch_switching()
+        if self.block_touch_switching1:
+            self.unblock_touch_switching(True)
         super().on_touch_down(touch)
 
     def on_touch_move(self, touch):
         if touch.dx < -80:
-            if self.main_screen_manager.current == 'news' and not self.block_touch_switching:
-                self.block_touch_switching = True
-                self.switch_to_homework()
-            elif self.main_screen_manager.current == 'homework' and not self.block_touch_switching:
-                self.block_touch_switching = True
-                self.switch_to_schedule()
-            elif self.main_screen_manager.current == 'schedule' and not self.block_touch_switching:
-                self.block_touch_switching = True
-                self.switch_to_attendance()
-            elif self.main_screen_manager.current == 'attendance' and not self.block_touch_switching:
-                self.block_touch_switching = True
-                self.switch_to_otherfuncs()
+            if self.main_screen_manager.current == 'news' and (self.block_touch_switching1+self.block_touch_switching2)==0:
+                self.unblock_touch_switching(True, True)
+                self.switch_to_homework(True)
+            elif self.main_screen_manager.current == 'homework' and (self.block_touch_switching1+self.block_touch_switching2)==0:
+                self.unblock_touch_switching(True, True)
+                self.switch_to_schedule(True)
+            elif self.main_screen_manager.current == 'schedule' and (self.block_touch_switching1+self.block_touch_switching2)==0:
+                self.unblock_touch_switching(True, True)
+                self.switch_to_attendance(True)
+            elif self.main_screen_manager.current == 'attendance' and (self.block_touch_switching1+self.block_touch_switching2)==0:
+                self.unblock_touch_switching(True, True)
+                self.switch_to_otherfuncs(True)
         elif touch.dx > 80:
-            if self.main_screen_manager.current == 'otherfuncs' and not self.block_touch_switching:
-                self.block_touch_switching = True
-                self.switch_to_attendance()
-            elif self.main_screen_manager.current == 'attendance' and not self.block_touch_switching:
-                self.block_touch_switching = True
-                self.switch_to_schedule()
-            elif self.main_screen_manager.current == 'schedule' and not self.block_touch_switching:
-                self.block_touch_switching = True
-                self.switch_to_homework()
-            elif self.main_screen_manager.current == 'homework' and not self.block_touch_switching:
-                self.block_touch_switching = True
-                self.switch_to_news()
+            if self.main_screen_manager.current == 'otherfuncs' and (self.block_touch_switching1+self.block_touch_switching2)==0:
+                self.unblock_touch_switching(True, True)
+                self.switch_to_attendance(True)
+            elif self.main_screen_manager.current == 'attendance' and (self.block_touch_switching1+self.block_touch_switching2)==0:
+                self.unblock_touch_switching(True, True)
+                self.switch_to_schedule(True)
+            elif self.main_screen_manager.current == 'schedule' and (self.block_touch_switching1+self.block_touch_switching2)==0:
+                self.unblock_touch_switching(True, True)
+                self.switch_to_homework(True)
+            elif self.main_screen_manager.current == 'homework' and (self.block_touch_switching1+self.block_touch_switching2)==0:
+                self.unblock_touch_switching(True, True)
+                self.switch_to_news(True)
 
         return super().on_touch_move(touch)
 
-    def un_mute_switchcsreen_buttons(self, to_mute = False):
+    def un_mute_switchcsreen_buttons(self, to_mute = False, from_swipe=False):
         self.switch_to_news_but.disabled = to_mute
         self.switch_to_homework_but.disabled = to_mute
         self.switch_to_schedule_but.disabled = to_mute
         self.switch_to_attendance_but.disabled = to_mute
         self.switch_to_otherfuncs_but.disabled = to_mute
+        if from_swipe and not to_mute:
+            self.unblock_touch_switching(False, True)
 
-    def unblock_touch_switching(self):
-        self.block_touch_switching = False
+    def unblock_touch_switching(self, u1 = False, u2 = False):
+        if u1:
+            self.block_touch_switching1 = not self.block_touch_switching1
+        if u2:
+            self.block_touch_switching2 = not self.block_touch_switching2
 
-    def switch_to_news(self):
+    def switch_to_news(self, from_swipe=False):
         if self.main_screen_manager.current != "news":
             self.un_mute_switchcsreen_buttons(True)
         self.main_screen_manager.transition = SlideTransition(direction = 'right', duration=0.15)
-        self.main_screen_manager.transition.bind(on_complete = lambda *args: self.un_mute_switchcsreen_buttons())
+        self.main_screen_manager.transition.bind(on_complete = lambda *args: self.un_mute_switchcsreen_buttons(False, from_swipe))
         self.main_screen_manager.current = 'news'
 
-    def switch_to_homework(self):
+    def switch_to_homework(self, from_swipe=False):
         if self.main_screen_manager.current != "homework":
             self.un_mute_switchcsreen_buttons(True)
         if self.main_screen_manager.current == 'news':
             self.main_screen_manager.transition = SlideTransition(direction = 'left', duration=0.15)
-            self.main_screen_manager.transition.bind(on_complete=lambda *args: self.un_mute_switchcsreen_buttons())
+            self.main_screen_manager.transition.bind(on_complete=lambda *args: self.un_mute_switchcsreen_buttons(False, from_swipe))
         else:
             self.main_screen_manager.transition = SlideTransition(direction='right', duration=0.15)
-            self.main_screen_manager.transition.bind(on_complete=lambda *args: self.un_mute_switchcsreen_buttons())
+            self.main_screen_manager.transition.bind(on_complete=lambda *args: self.un_mute_switchcsreen_buttons(False, from_swipe))
         self.main_screen_manager.current = 'homework'
 
-    def switch_to_schedule(self):
+    def switch_to_schedule(self, from_swipe=False):
         if self.main_screen_manager.current != "schedule":
             self.un_mute_switchcsreen_buttons(True)
         if self.main_screen_manager.current == 'news' or self.main_screen_manager.current == 'homework':
             self.main_screen_manager.transition = SlideTransition(direction = 'left', duration=0.15)
-            self.main_screen_manager.transition.bind(on_complete=lambda *args: self.un_mute_switchcsreen_buttons())
+            self.main_screen_manager.transition.bind(on_complete=lambda *args: self.un_mute_switchcsreen_buttons(False, from_swipe))
         else:
             self.main_screen_manager.transition = SlideTransition(direction='right', duration=0.15)
-            self.main_screen_manager.transition.bind(on_complete=lambda *args: self.un_mute_switchcsreen_buttons())
+            self.main_screen_manager.transition.bind(on_complete=lambda *args: self.un_mute_switchcsreen_buttons(False, from_swipe))
         self.main_screen_manager.current = 'schedule'
 
-    def switch_to_attendance(self):
+    def switch_to_attendance(self, from_swipe=False):
         if self.main_screen_manager.current != "attendance":
             self.un_mute_switchcsreen_buttons(True)
         if self.main_screen_manager.current == 'otherfuncs':
             self.main_screen_manager.transition = SlideTransition(direction = 'right', duration=0.15)
-            self.main_screen_manager.transition.bind(on_complete=lambda *args: self.un_mute_switchcsreen_buttons())
+            self.main_screen_manager.transition.bind(on_complete=lambda *args: self.un_mute_switchcsreen_buttons(False, from_swipe))
         else:
             self.main_screen_manager.transition = SlideTransition(direction='left', duration=0.15)
-            self.main_screen_manager.transition.bind(on_complete=lambda *args: self.un_mute_switchcsreen_buttons())
+            self.main_screen_manager.transition.bind(on_complete=lambda *args: self.un_mute_switchcsreen_buttons(False, from_swipe))
         self.main_screen_manager.current = 'attendance'
 
-    def switch_to_otherfuncs(self):
+    def switch_to_otherfuncs(self, from_swipe=False):
         if self.main_screen_manager.current != "otherfuncs":
             self.un_mute_switchcsreen_buttons(True)
         self.main_screen_manager.transition = SlideTransition(direction='left', duration=0.15)
-        self.main_screen_manager.transition.bind(on_complete=lambda *args: self.un_mute_switchcsreen_buttons())
+        self.main_screen_manager.transition.bind(on_complete=lambda *args: self.un_mute_switchcsreen_buttons(False, from_swipe))
         self.main_screen_manager.current = 'otherfuncs'
 
 
